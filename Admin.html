@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Absensi RAY — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#10141b; --panel:#1a2029; --panel2:#212a36; --border:#2b3441;
+    --text:#edf0f3; --muted:#8c97a6; --orange:#ff5a1f; --lime:#c6e21e; --red:#e5484d;
+    --radius:6px;
+    --f-display:'Barlow Condensed',sans-serif; --f-body:'Inter',sans-serif; --f-mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--ink); color:var(--text); font-family:var(--f-body); min-height:100vh;}
+  h1,h2,h3,.display{font-family:var(--f-display); font-weight:600; margin:0;}
+  .mono{font-family:var(--f-mono);}
+  .muted{color:var(--muted);}
+  .hidden{display:none !important;}
+  button,select,input{font-family:var(--f-body);}
+
+  .center-screen{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;}
+  .login-card{width:100%; max-width:380px; background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:26px;}
+  .login-card .brand{font-family:var(--f-display); font-size:13px; letter-spacing:2px; color:var(--muted); text-align:center;}
+  .login-card h1{font-size:28px; text-align:center; margin-top:4px; margin-bottom:22px;}
+
+  label{display:block; font-size:13px; color:var(--muted); margin:12px 0 6px;}
+  label:first-child{margin-top:0;}
+  input[type=password],input[type=text],select,input[type=number]{
+    width:100%; background:var(--ink); border:1px solid var(--border); color:var(--text);
+    padding:10px 11px; border-radius:var(--radius); font-size:14px;
+  }
+  input:focus,select:focus,button:focus-visible{outline:2px solid var(--orange); outline-offset:1px;}
+
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:6px;
+    padding:10px 16px; border-radius:var(--radius); border:1px solid transparent;
+    font-family:var(--f-display); font-size:15px; font-weight:600; cursor:pointer; margin-top:12px;
+  }
+  .btn:disabled{opacity:.4; cursor:not-allowed;}
+  .btn-primary{background:var(--orange); color:#1a0d05; width:100%;}
+  .btn-lime{background:var(--lime); color:#151b06;}
+  .btn-outline{background:transparent; border-color:var(--border); color:var(--text);}
+  .btn-danger{background:transparent; border-color:var(--red); color:var(--red);}
+  .btn-sm{padding:6px 12px; font-size:13px; margin-top:0;}
+
+  /* app shell */
+  .app{display:none;}
+  .app.show{display:block;}
+  header.top{
+    background:var(--panel); border-bottom:1px solid var(--border);
+    padding:14px 20px; display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between;
+    position:sticky; top:0; z-index:10;
+  }
+  header.top .brand-block{display:flex; align-items:center; gap:10px;}
+  header.top .brand-block .display{font-size:20px;}
+  .role-tag{
+    font-family:var(--f-mono); font-size:11px; padding:2px 8px; border-radius:3px; border:1px solid var(--border); color:var(--muted);
+  }
+  .role-tag.internal{border-color:var(--orange); color:var(--orange);}
+  .filter-group{display:flex; align-items:center; gap:8px;}
+  .filter-group select,.filter-group input{width:auto; padding:7px 9px; font-size:13px;}
+  .filter-group label{margin:0; white-space:nowrap;}
+
+  nav.tabs{
+    display:flex; gap:2px; overflow-x:auto; background:var(--panel); border-bottom:1px solid var(--border);
+    padding:0 20px;
+  }
+  nav.tabs button{
+    background:none; border:none; color:var(--muted); padding:12px 16px; font-family:var(--f-display);
+    font-size:15px; cursor:pointer; border-bottom:2px solid transparent; white-space:nowrap;
+  }
+  nav.tabs button.active{color:var(--text); border-bottom-color:var(--orange);}
+
+  main{max-width:1100px; margin:0 auto; padding:22px 20px 60px;}
+  .tabpanel{display:none;}
+  .tabpanel.active{display:block;}
+
+  .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-bottom:20px;}
+  .stat-tile{background:var(--panel); border:1px solid var(--border); border-left:3px solid var(--orange); border-radius:var(--radius); padding:14px;}
+  .stat-tile .num{font-family:var(--f-display); font-size:30px; line-height:1;}
+  .stat-tile .lb{font-size:12px; color:var(--muted); margin-top:4px;}
+
+  .panel{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:16px;}
+  .section-title{font-family:var(--f-display); font-size:16px; margin-bottom:12px;}
+
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th,td{text-align:left; padding:9px 8px; border-bottom:1px solid var(--border); white-space:nowrap;}
+  th{color:var(--muted); font-weight:500; font-family:var(--f-display); font-size:13px;}
+  td.num,th.num{font-family:var(--f-mono); text-align:right;}
+  .table-scroll{overflow-x:auto;}
+
+  .chart{display:flex; align-items:flex-end; gap:14px; height:160px; padding:10px 4px 0;}
+  .chart .bar-group{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;}
+  .chart .bars{display:flex; align-items:flex-end; gap:3px; height:130px;}
+  .chart .bars .b{width:9px; border-radius:2px 2px 0 0;}
+  .chart .bars .b.hadir{background:var(--lime);}
+  .chart .bars .b.telat{background:var(--orange);}
+  .chart .bars .b.ijin{background:var(--muted);}
+  .chart .lb{font-size:11px; color:var(--muted); margin-top:6px; font-family:var(--f-mono);}
+  .legend{display:flex; gap:16px; font-size:12px; color:var(--muted); margin-top:6px;}
+  .legend span{display:inline-flex; align-items:center; gap:5px;}
+  .legend i{width:9px; height:9px; border-radius:2px; display:inline-block;}
+
+  .subtabs{display:flex; gap:8px; margin-bottom:14px;}
+  .subtabs button{background:var(--panel2); border:1px solid var(--border); color:var(--muted); padding:7px 14px; border-radius:var(--radius); cursor:pointer; font-size:13px;}
+  .subtabs button.active{color:var(--text); border-color:var(--orange); color:var(--orange);}
+
+  .approval-item{background:var(--panel); border:1px solid var(--border); border-left:3px solid var(--orange); border-radius:var(--radius); padding:14px; margin-bottom:10px;}
+  .approval-item .row{display:flex; justify-content:space-between; font-size:13px; padding:3px 0;}
+  .approval-item .row .k{color:var(--muted);}
+  .approval-item .actions{display:flex; gap:8px; margin-top:10px;}
+  .approval-item a{color:var(--orange); font-size:12px;}
+
+  .empty-state{text-align:center; padding:40px 16px; color:var(--muted);}
+  .empty-state .big{font-size:32px; margin-bottom:6px;}
+
+  .chat-log{display:flex; flex-direction:column; gap:12px; margin-bottom:14px; max-height:60vh; overflow-y:auto; padding-right:4px;}
+  .chat-msg{max-width:80%; padding:10px 13px; border-radius:var(--radius); font-size:14px; line-height:1.5; white-space:pre-wrap;}
+  .chat-msg.user{align-self:flex-end; background:var(--orange); color:#1a0d05;}
+  .chat-msg.ai{align-self:flex-start; background:var(--panel2); border:1px solid var(--border);}
+  .chat-input-row{display:flex; gap:8px;}
+  .chat-input-row textarea{
+    flex:1; background:var(--ink); border:1px solid var(--border); color:var(--text); border-radius:var(--radius);
+    padding:10px 12px; font-size:14px; font-family:var(--f-body); resize:none; min-height:44px;
+  }
+
+  .toast{
+    position:fixed; right:20px; bottom:20px; max-width:340px; background:var(--panel2); border:1px solid var(--border);
+    border-radius:var(--radius); padding:12px 14px; font-size:13px; z-index:50; box-shadow:0 6px 20px rgba(0,0,0,.4);
+  }
+  .toast.ok{border-left:3px solid var(--lime);}
+  .toast.err{border-left:3px solid var(--red);}
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN ================= -->
+<section id="screen-login" class="center-screen">
+  <div class="login-card">
+    <div class="brand">PT. RAY MITRA PERKASA</div>
+    <h1>Panel Admin</h1>
+    <label>Password Admin</label>
+    <input type="password" id="login-password" placeholder="Masukkan password">
+    <button class="btn btn-primary" id="btn-login-admin">Masuk</button>
+  </div>
+</section>
+
+<!-- ================= APP SHELL ================= -->
+<div class="app" id="app">
+  <header class="top">
+    <div class="brand-block">
+      <div class="display" style="font-size:20px;">Absensi RAY</div>
+      <span class="role-tag" id="role-tag">-</span>
+    </div>
+    <div class="filter-group">
+      <label>Bulan</label>
+      <select id="filter-bulan"></select>
+      <label>Tahun</label>
+      <input type="number" id="filter-tahun" style="width:80px;">
+      <button class="btn btn-outline btn-sm" id="btn-terapkan-filter">Terapkan</button>
+      <button class="btn btn-danger btn-sm" id="btn-logout-admin">Keluar</button>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="absensi" class="active">Dashboard Absensi</button>
+    <button data-tab="patroli">Dashboard Patroli</button>
+    <button data-tab="cleaning">Dashboard Cleaning</button>
+    <button data-tab="persetujuan" id="tab-btn-persetujuan">Persetujuan</button>
+    <button data-tab="ai">Tanya AI</button>
+  </nav>
+
+  <main>
+    <!-- ===== TAB: ABSENSI ===== -->
+    <section class="tabpanel active" id="tab-absensi">
+      <div class="stat-grid" id="absensi-stats"></div>
+      <div class="panel">
+        <div class="section-title">Tren 6 Bulan Terakhir</div>
+        <div class="chart" id="absensi-chart"></div>
+        <div class="legend">
+          <span><i style="background:var(--lime)"></i>Hadir</span>
+          <span><i style="background:var(--orange)"></i>Telat</span>
+          <span><i style="background:var(--muted)"></i>Ijin</span>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="section-title">Per Karyawan</div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Nama</th><th>Bagian</th><th class="num">Hadir</th><th class="num">Telat</th><th class="num">Ijin</th><th class="num">% Hadir</th></tr></thead>
+            <tbody id="absensi-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TAB: PATROLI ===== -->
+    <section class="tabpanel" id="tab-patroli">
+      <div class="stat-grid" id="patroli-stats"></div>
+      <div class="panel">
+        <div class="section-title">Per Staf Security</div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Nama</th><th class="num">Lapor Bulan Ini</th><th class="num">Rata-rata/Hari</th><th>Terakhir Lapor</th></tr></thead>
+            <tbody id="patroli-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TAB: CLEANING ===== -->
+    <section class="tabpanel" id="tab-cleaning">
+      <div class="stat-grid" id="cleaning-stats"></div>
+      <div class="panel">
+        <div class="section-title">Per Staf Cleaning Service</div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Nama</th><th class="num">Lapor Bulan Ini</th><th class="num">Rata-rata/Hari</th><th>Terakhir Lapor</th></tr></thead>
+            <tbody id="cleaning-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TAB: PERSETUJUAN ===== -->
+    <section class="tabpanel" id="tab-persetujuan">
+      <div class="subtabs">
+        <button data-sub="pendaftaran" class="active">Pendaftaran Baru</button>
+        <button data-sub="ijin">Pengajuan Ijin</button>
+      </div>
+      <div id="sub-pendaftaran"></div>
+      <div id="sub-ijin" class="hidden"></div>
+    </section>
+
+    <!-- ===== TAB: AI ===== -->
+    <section class="tabpanel" id="tab-ai">
+      <div class="panel">
+        <div class="section-title">Tanya Admin AI</div>
+        <p class="muted" style="font-size:13px; margin-top:-6px;">AI menjawab berdasarkan data KPI bulan/tahun yang sedang dipilih di atas. Bersifat read-only, tidak bisa melakukan aksi apapun.</p>
+        <div class="chat-log" id="chat-log"></div>
+        <div class="chat-input-row">
+          <textarea id="chat-input" placeholder="Contoh: siapa yang paling sering telat bulan ini?"></textarea>
+          <button class="btn btn-primary" id="btn-chat-send" style="margin-top:0;">Kirim</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbxXUWLfH0gYfs9rHndGbY0eLvV_TcfllYAUQ7uHqcZELrJux1vUCp-33wGdYkoRXKZH/exec';
+
+let adminPassword = '';
+let peran = '';
+let filterBulan, filterTahun;
+
+async function api(action, payload) {
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(Object.assign({ action }, payload || {}))
+    });
+    return await res.json();
+  } catch (e) {
+    return { sukses: false, pesan: 'Gagal terhubung ke server.' };
+  }
+}
+function showToast(pesan, ok) {
+  const t = document.getElementById('toast');
+  t.textContent = pesan;
+  t.className = 'toast ' + (ok ? 'ok' : 'err');
+  t.classList.remove('hidden');
+  clearTimeout(showToast._tm);
+  showToast._tm = setTimeout(() => t.classList.add('hidden'), 3800);
+}
+function setBusy(btn, busy, labelBusy, labelNormal) {
+  btn.disabled = busy;
+  btn.textContent = busy ? (labelBusy || 'Memproses...') : labelNormal;
+}
+
+/* ===== LOGIN ===== */
+document.getElementById('btn-login-admin').addEventListener('click', async () => {
+  const pass = document.getElementById('login-password').value;
+  if (!pass) return showToast('Masukkan password.', false);
+  const btn = document.getElementById('btn-login-admin');
+  setBusy(btn, true, 'Memeriksa...', 'Masuk');
+  const res = await api('loginAdmin', { password: pass });
+  setBusy(btn, false, '', 'Masuk');
+  if (!res.sukses) return showToast(res.pesan || 'Password salah.', false);
+  adminPassword = pass;
+  peran = res.peran;
+  masukKeApp();
+});
+document.getElementById('login-password').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('btn-login-admin').click();
+});
+document.getElementById('btn-logout-admin').addEventListener('click', () => {
+  adminPassword = ''; peran = '';
+  document.getElementById('app').classList.remove('show');
+  document.getElementById('screen-login').style.display = 'flex';
+  document.getElementById('login-password').value = '';
+});
+
+function masukKeApp() {
+  document.getElementById('screen-login').style.display = 'none';
+  document.getElementById('app').classList.add('show');
+  const roleTag = document.getElementById('role-tag');
+  roleTag.textContent = peran === 'internal' ? 'ADMIN INTERNAL' : 'ADMIN CLIENT';
+  roleTag.classList.toggle('internal', peran === 'internal');
+  document.getElementById('tab-btn-persetujuan').classList.toggle('hidden', peran !== 'internal');
+
+  const now = new Date();
+  filterBulan = now.getMonth() + 1; filterTahun = now.getFullYear();
+  const selBulan = document.getElementById('filter-bulan');
+  const namaBulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  selBulan.innerHTML = namaBulan.map((n,i) => '<option value="'+(i+1)+'">'+n+'</option>').join('');
+  selBulan.value = filterBulan;
+  document.getElementById('filter-tahun').value = filterTahun;
+
+  muatSemuaDashboard();
+}
+document.getElementById('btn-terapkan-filter').addEventListener('click', () => {
+  filterBulan = parseInt(document.getElementById('filter-bulan').value, 10);
+  filterTahun = parseInt(document.getElementById('filter-tahun').value, 10);
+  muatSemuaDashboard();
+});
+
+/* ===== TABS ===== */
+document.getElementById('tabs').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-tab]');
+  if (!btn) return;
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.tabpanel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  if (btn.dataset.tab === 'persetujuan') muatPersetujuan();
+});
+
+/* ===== LOAD DASHBOARDS ===== */
+function muatSemuaDashboard() {
+  muatDashboardAbsensi();
+  muatDashboardOperasional('ambilDashboardPatroli', 'patroli-stats', 'patroli-table');
+  muatDashboardOperasional('ambilDashboardCleaning', 'cleaning-stats', 'cleaning-table');
+}
+
+function statTile(num, label) {
+  return '<div class="stat-tile"><div class="num">' + num + '</div><div class="lb">' + label + '</div></div>';
+}
+
+async function muatDashboardAbsensi() {
+  const res = await api('ambilDashboardKPI', { password: adminPassword, bulan: filterBulan, tahun: filterTahun });
+  if (!res.sukses) return showToast(res.pesan, false);
+  const kpi = res.kpi;
+  const r = kpi.ringkasan;
+  document.getElementById('absensi-stats').innerHTML =
+    statTile(r.totalKaryawan, 'Total Karyawan') +
+    statTile(r.totalHadir, 'Total Hadir') +
+    statTile(r.totalTelat, 'Total Telat') +
+    statTile(r.totalIjin, 'Ijin Disetujui') +
+    statTile(r.rataRataKehadiran + '%', 'Rata-rata Kehadiran');
+
+  const maxVal = Math.max(1, ...kpi.grafik.flatMap(g => [g.hadir, g.telat, g.ijin]));
+  document.getElementById('absensi-chart').innerHTML = kpi.grafik.map(g =>
+    '<div class="bar-group">' +
+      '<div class="bars">' +
+        '<div class="b hadir" style="height:' + (g.hadir/maxVal*130) + 'px" title="Hadir: '+g.hadir+'"></div>' +
+        '<div class="b telat" style="height:' + (g.telat/maxVal*130) + 'px" title="Telat: '+g.telat+'"></div>' +
+        '<div class="b ijin" style="height:' + (g.ijin/maxVal*130) + 'px" title="Ijin: '+g.ijin+'"></div>' +
+      '</div>' +
+      '<div class="lb">' + g.label + '</div>' +
+    '</div>'
+  ).join('');
+
+  document.getElementById('absensi-table').innerHTML = kpi.perKaryawan.map(k =>
+    '<tr><td>'+k.nama+'</td><td class="muted">'+k.bagianKerja+'</td>' +
+    '<td class="num">'+k.hadir+'</td><td class="num">'+k.telat+'</td><td class="num">'+k.ijin+'</td>' +
+    '<td class="num">'+k.persenKehadiran+'%</td></tr>'
+  ).join('') || '<tr><td colspan="6" class="muted">Tidak ada data.</td></tr>';
+}
+
+async function muatDashboardOperasional(action, statsId, tableId) {
+  const res = await api(action, { password: adminPassword, bulan: filterBulan, tahun: filterTahun });
+  if (!res.sukses) return showToast(res.pesan, false);
+  const kpi = res.kpi;
+  document.getElementById(statsId).innerHTML =
+    statTile(kpi.totalStaf, 'Total Staf') +
+    statTile(kpi.hariKerja, 'Hari Kerja Berjalan');
+  document.getElementById(tableId).innerHTML = kpi.perStaf.map(s =>
+    '<tr><td>'+s.nama+'</td><td class="num">'+s.jumlahLapor+'</td><td class="num">'+s.rataRataPerHari+'</td><td class="mono">'+s.terakhirLapor+'</td></tr>'
+  ).join('') || '<tr><td colspan="4" class="muted">Belum ada staf terdaftar untuk divisi ini.</td></tr>';
+}
+
+/* ===== PERSETUJUAN ===== */
+document.querySelectorAll('.subtabs button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.subtabs button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById('sub-pendaftaran').classList.toggle('hidden', b.dataset.sub !== 'pendaftaran');
+    document.getElementById('sub-ijin').classList.toggle('hidden', b.dataset.sub !== 'ijin');
+  });
+});
+
+async function muatPersetujuan() {
+  if (peran !== 'internal') return;
+  const [resDaftar, resIjin] = await Promise.all([
+    api('daftarPendaftaranBaru', { password: adminPassword }),
+    api('daftarIjinAdmin', { password: adminPassword })
+  ]);
+  renderPendaftaran(resDaftar.daftar || []);
+  renderIjin(resIjin.daftar || []);
+}
+
+function renderPendaftaran(list) {
+  const box = document.getElementById('sub-pendaftaran');
+  if (!list.length) { box.innerHTML = '<div class="empty-state"><div class="big">✅</div>Tidak ada pendaftaran menunggu persetujuan.</div>'; return; }
+  box.innerHTML = list.map(d =>
+    '<div class="approval-item">' +
+      '<div class="row"><span class="k">Nama</span><span>'+d.nama+'</span></div>' +
+      '<div class="row"><span class="k">Bagian Kerja</span><span>'+d.bagianKerja+'</span></div>' +
+      '<div class="row"><span class="k">PIN</span><span class="mono">'+d.pin+'</span></div>' +
+      '<div class="row"><span class="k">Tanggal Daftar</span><span class="mono">'+d.tanggalDaftar+'</span></div>' +
+      '<div class="actions">' +
+        '<button class="btn btn-lime btn-sm" onclick="prosesPendaftaran('+d.baris+',true)">Setujui</button>' +
+        '<button class="btn btn-danger btn-sm" onclick="prosesPendaftaran('+d.baris+',false)">Tolak</button>' +
+      '</div>' +
+    '</div>'
+  ).join('');
+}
+function renderIjin(list) {
+  const box = document.getElementById('sub-ijin');
+  if (!list.length) { box.innerHTML = '<div class="empty-state"><div class="big">✅</div>Tidak ada pengajuan ijin menunggu persetujuan.</div>'; return; }
+  box.innerHTML = list.map(d =>
+    '<div class="approval-item">' +
+      '<div class="row"><span class="k">Nama</span><span>'+d.nama+'</span></div>' +
+      '<div class="row"><span class="k">Jenis</span><span>'+d.jenisIjin+'</span></div>' +
+      '<div class="row"><span class="k">Tanggal Ijin</span><span class="mono">'+d.tanggalIjin+'</span></div>' +
+      '<div class="row"><span class="k">Keterangan</span><span>'+(d.keterangan||'-')+'</span></div>' +
+      '<div class="row"><span class="k">Bukti</span><a href="'+d.linkBukti+'" target="_blank" rel="noopener">Lihat File</a></div>' +
+      '<div class="actions">' +
+        '<button class="btn btn-lime btn-sm" onclick="prosesIjin('+d.baris+',true)">Setujui</button>' +
+        '<button class="btn btn-danger btn-sm" onclick="prosesIjin('+d.baris+',false)">Tolak</button>' +
+      '</div>' +
+    '</div>'
+  ).join('');
+}
+async function prosesPendaftaran(baris, setujui) {
+  const res = await api(setujui ? 'setujuiPendaftaran' : 'tolakPendaftaran', { password: adminPassword, baris });
+  showToast(res.pesan, res.sukses);
+  if (res.sukses) muatPersetujuan();
+}
+async function prosesIjin(baris, setujui) {
+  const res = await api(setujui ? 'setujuiIjin' : 'tolakIjin', { password: adminPassword, baris });
+  showToast(res.pesan, res.sukses);
+  if (res.sukses) muatPersetujuan();
+}
+
+/* ===== CHATBOT AI ===== */
+function pushChat(role, text) {
+  const log = document.getElementById('chat-log');
+  const div = document.createElement('div');
+  div.className = 'chat-msg ' + role;
+  div.textContent = text;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+document.getElementById('btn-chat-send').addEventListener('click', kirimChat);
+document.getElementById('chat-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); kirimChat(); }
+});
+async function kirimChat() {
+  const input = document.getElementById('chat-input');
+  const teks = input.value.trim();
+  if (!teks) return;
+  pushChat('user', teks);
+  input.value = '';
+  const btn = document.getElementById('btn-chat-send');
+  setBusy(btn, true, '...', 'Kirim');
+  const res = await api('tanyaAdminAI', { password: adminPassword, pertanyaan: teks, bulan: filterBulan, tahun: filterTahun });
+  setBusy(btn, false, '', 'Kirim');
+  pushChat('ai', res.sukses ? res.jawaban : ('⚠️ ' + res.pesan));
+}
+</script>
+</body>
+</html>
