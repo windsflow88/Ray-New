@@ -54,6 +54,7 @@
 
   /* ===== layout ===== */
   .screen{max-width:520px; margin:0 auto; padding:16px 16px 24px;}
+  .screen-body{max-width:520px; margin:0 auto; padding:16px 16px 24px;}
   .center-screen{min-height:100vh; min-height:100dvh; display:flex; flex-direction:column; justify-content:center; padding:24px;}
 
   .panel{
@@ -207,7 +208,7 @@
 <!-- ================= DAFTAR BARU ================= -->
 <section id="screen-daftar" class="screen hidden">
   <div class="top-back"><button id="back-daftar">←</button><h2>Daftar Karyawan Baru</h2></div>
-  <div class="screen" style="padding-top:8px;">
+  <div class="screen-body" style="padding-top:8px;">
     <div class="panel">
       <label>Nama Lengkap</label>
       <input type="text" id="daftar-nama" placeholder="Sesuai KTP">
@@ -248,7 +249,7 @@
     </div>
   </div>
 
-  <div class="screen" style="padding-top:14px;">
+  <div class="screen-body" style="padding-top:14px;">
     <div class="section-title">Aksi Cepat</div>
     <div class="card-action" data-goto="absen">
       <div class="ic">🕓</div>
@@ -283,7 +284,7 @@
 <!-- ================= ABSEN ================= -->
 <section id="screen-absen" class="screen hidden">
   <div class="top-back"><button data-back="home">←</button><h2>Absen</h2></div>
-  <div class="screen" style="padding-top:8px;">
+  <div class="screen-body" style="padding-top:8px;">
 
     <div class="panel accent-muted" id="absen-status-panel">
       <div class="row"><span class="k">Clock In</span><span class="v" id="absen-jam-in">-</span></div>
@@ -321,13 +322,13 @@
 <!-- ================= RIWAYAT ================= -->
 <section id="screen-riwayat" class="screen hidden">
   <div class="top-back"><button data-back="home">←</button><h2>Riwayat Absensi</h2></div>
-  <div class="screen" style="padding-top:8px;" id="riwayat-list"></div>
+  <div class="screen-body" style="padding-top:8px;" id="riwayat-list"></div>
 </section>
 
 <!-- ================= IJIN ================= -->
 <section id="screen-ijin" class="screen hidden">
   <div class="top-back"><button data-back="home">←</button><h2>Ajukan Ijin</h2></div>
-  <div class="screen" style="padding-top:8px;">
+  <div class="screen-body" style="padding-top:8px;">
     <div class="panel">
       <label>Jenis Ijin</label>
       <select id="ijin-jenis">
@@ -363,7 +364,7 @@
 <!-- ================= PATROLI ================= -->
 <section id="screen-patroli" class="screen hidden">
   <div class="top-back"><button data-back="home">←</button><h2>Patroli</h2></div>
-  <div class="screen" style="padding-top:8px;">
+  <div class="screen-body" style="padding-top:8px;">
 
     <div id="patroli-step-pilih">
       <div class="section-title">Pilih Titik Pos</div>
@@ -409,7 +410,7 @@
 <!-- ================= KEGIATAN (CLEANING) ================= -->
 <section id="screen-kegiatan" class="screen hidden">
   <div class="top-back"><button data-back="home">←</button><h2>Laporan Kegiatan</h2></div>
-  <div class="screen" style="padding-top:8px;">
+  <div class="screen-body" style="padding-top:8px;">
 
     <div id="kegiatan-step-pilih">
       <div class="section-title">Pilih Tugas</div>
