@@ -143,6 +143,11 @@
   .cam-wrap{position:relative; width:100%; aspect-ratio:3/4; background:#000; border-radius:var(--radius-sm); overflow:hidden; border:1px solid var(--border);}
   .cam-wrap video, .cam-wrap canvas.frame{width:100%; height:100%; object-fit:cover; display:block;}
   .cam-wrap .scan-box{position:absolute; inset:18% 14%; border:2px solid var(--green); border-radius:8px; pointer-events:none; box-shadow:0 0 0 999px rgba(0,0,0,.35);}
+  .cam-flip{
+    position:absolute; top:10px; right:10px; z-index:5; width:38px; height:38px; border-radius:50%;
+    background:rgba(15,25,40,.6); border:1px solid rgba(255,255,255,.3); color:#fff; font-size:17px;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
   .cam-shot{width:100%; border-radius:var(--radius-sm); border:1px solid var(--border); display:block;}
   .cam-actions{display:flex; gap:10px; margin-top:10px;}
   .cam-actions .btn{margin-top:0;}
@@ -306,7 +311,7 @@
 <div id="modal-presensi" class="modal-overlay hidden">
   <div class="modal-sheet">
     <h3 id="presensi-modal-title">Presensi Masuk</h3>
-    <div class="cam-wrap"><video id="presensi-video" autoplay playsinline muted></video></div>
+    <div class="cam-wrap"><video id="presensi-video" autoplay playsinline muted></video><button class="cam-flip" id="btn-flip-presensi" type="button">🔄</button></div>
     <canvas id="presensi-canvas" class="hidden"></canvas>
     <img id="presensi-shot" class="cam-shot hidden">
     <div class="cam-actions" id="presensi-shoot-wrap">
@@ -343,7 +348,7 @@
       <button class="btn btn-outline" id="btn-buka-kamera-ijin">📷 Buka Kamera</button>
     </div>
     <div id="ijin-cam-live" class="hidden">
-      <div class="cam-wrap"><video id="ijin-video" autoplay playsinline muted></video></div>
+      <div class="cam-wrap"><video id="ijin-video" autoplay playsinline muted></video><button class="cam-flip" id="btn-flip-ijin" type="button">🔄</button></div>
       <div class="cam-actions"><button class="btn btn-navy" id="btn-shoot-ijin">📸 Ambil Foto</button></div>
     </div>
     <canvas id="ijin-canvas" class="hidden"></canvas>
@@ -385,7 +390,7 @@
     </div>
     <div class="card">
       <div class="section-lbl">Foto Bukti</div>
-      <div class="cam-wrap"><video id="patroli-video2" autoplay playsinline muted></video></div>
+      <div class="cam-wrap"><video id="patroli-video2" autoplay playsinline muted></video><button class="cam-flip" id="btn-flip-patroli2" type="button">🔄</button></div>
       <canvas id="patroli-canvas" class="hidden"></canvas>
       <img id="patroli-shot" class="cam-shot hidden">
       <div class="cam-actions"><button class="btn btn-navy" id="btn-shoot-patroli">📸 Ambil Foto</button></div>
@@ -438,7 +443,7 @@
     <div class="card">
       <div class="section-lbl">Foto Sebelum</div>
       <div id="keg-sebelum-cam">
-        <div class="cam-wrap"><video id="keg-video-sebelum" autoplay playsinline muted></video></div>
+        <div class="cam-wrap"><video id="keg-video-sebelum" autoplay playsinline muted></video><button class="cam-flip" id="btn-flip-kegsebelum" type="button">🔄</button></div>
         <div class="cam-actions"><button class="btn btn-navy" id="btn-shoot-sebelum">📸 Ambil Foto Sebelum</button></div>
       </div>
       <canvas id="keg-canvas-sebelum" class="hidden"></canvas>
@@ -450,7 +455,7 @@
       <div class="section-lbl">Foto Sesudah</div>
       <div id="keg-sesudah-wrap" class="hidden">
         <div id="keg-sesudah-cam">
-          <div class="cam-wrap"><video id="keg-video-sesudah" autoplay playsinline muted></video></div>
+          <div class="cam-wrap"><video id="keg-video-sesudah" autoplay playsinline muted></video><button class="cam-flip" id="btn-flip-kegsesudah" type="button">🔄</button></div>
           <div class="cam-actions"><button class="btn btn-navy" id="btn-shoot-sesudah">📸 Ambil Foto Sesudah</button></div>
         </div>
         <canvas id="keg-canvas-sesudah" class="hidden"></canvas>
@@ -485,7 +490,7 @@
 <script>
 /* ====================== KONFIGURASI ====================== */
 const API_URL = 'https://script.google.com/macros/s/AKfycbxXUWLfH0gYfs9rHndGbY0eLvV_TcfllYAUQ7uHqcZELrJux1vUCp-33wGdYkoRXKZH/exec';
-const LOGO_URL = ''; // isi dengan URL logo perusahaan kalau sudah ada, kosongkan untuk pakai ikon huruf
+const LOGO_URL = 'icon-192.png'; // file logo harus di-upload sejajar dengan index.html di repo GitHub
 
 /* ====================== STATE ====================== */
 let sesi = { nama: '', pin: '', bagianKerja: '' };
@@ -569,16 +574,27 @@ function doLogout() {
 }
 
 /* ====================== KAMERA ====================== */
-async function startCamera(videoEl, key) {
+let cameraFacing = {}; // key -> 'user' (depan) | 'environment' (belakang), diingat per konteks kamera
+
+async function startCamera(videoEl, key, defaultFacing) {
+  key = key || videoEl.id;
+  const facing = cameraFacing[key] || defaultFacing || 'environment';
+  cameraFacing[key] = facing;
+  stopCameraByKey(key);
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: facing } }, audio: false });
     videoEl.srcObject = stream;
-    cameraStreams[key || videoEl.id] = stream;
+    cameraStreams[key] = stream;
     return stream;
   } catch (e) {
     showToast('Tidak bisa mengakses kamera. Izinkan akses kamera di browser.', false);
     return null;
   }
+}
+async function toggleCamera(videoEl, key) {
+  key = key || videoEl.id;
+  cameraFacing[key] = (cameraFacing[key] === 'user') ? 'environment' : 'user';
+  await startCamera(videoEl, key, cameraFacing[key]);
 }
 function stopCameraByKey(key) {
   const s = cameraStreams[key];
@@ -821,7 +837,7 @@ function bukaModalPresensi(jenis) {
   document.getElementById('presensi-shoot-wrap').classList.remove('hidden');
   document.getElementById('presensi-retake-wrap').classList.add('hidden');
   document.getElementById('modal-presensi').classList.remove('hidden');
-  startCamera(document.getElementById('presensi-video'), 'presensi');
+  startCamera(document.getElementById('presensi-video'), 'presensi', 'user');
 }
 function tutupModalPresensi() {
   stopCameraByKey('presensi');
@@ -846,8 +862,9 @@ document.getElementById('btn-retake-presensi').addEventListener('click', async (
   document.getElementById('presensi-video').classList.remove('hidden');
   document.getElementById('presensi-shoot-wrap').classList.remove('hidden');
   document.getElementById('presensi-retake-wrap').classList.add('hidden');
-  await startCamera(document.getElementById('presensi-video'), 'presensi');
+  await startCamera(document.getElementById('presensi-video'), 'presensi', 'user');
 });
+document.getElementById('btn-flip-presensi').addEventListener('click', () => toggleCamera(document.getElementById('presensi-video'), 'presensi'));
 document.getElementById('btn-kirim-presensi').addEventListener('click', async () => {
   if (!presensiFotoB64 || !posisiTerkini) return showToast('Foto dan lokasi wajib tersedia.', false);
   const btn = document.getElementById('btn-kirim-presensi');
@@ -883,6 +900,7 @@ document.getElementById('btn-buka-kamera-ijin').addEventListener('click', async 
   document.getElementById('ijin-cam-live').classList.remove('hidden');
   await startCamera(document.getElementById('ijin-video'), 'ijin');
 });
+document.getElementById('btn-flip-ijin').addEventListener('click', () => toggleCamera(document.getElementById('ijin-video'), 'ijin'));
 document.getElementById('btn-shoot-ijin').addEventListener('click', () => {
   const dataUrl = captureFrame(document.getElementById('ijin-video'), document.getElementById('ijin-canvas'));
   ijinFotoB64 = base64Of(dataUrl);
@@ -941,6 +959,7 @@ function mulaiLaporPatroli(namaPos) {
   document.getElementById('btn-retake-patroli').classList.add('hidden');
   document.getElementById('btn-kirim-patroli').disabled = true;
   startCamera(document.getElementById('patroli-video2'), 'patroli2');
+  document.getElementById('btn-flip-patroli2').onclick = () => toggleCamera(document.getElementById('patroli-video2'), 'patroli2');
   const dot = document.getElementById('patroli-loc-dot'), txt = document.getElementById('patroli-loc-text');
   if (posisiTerkini) { dot.className = 'pulse ok'; txt.textContent = posisiTerkini.lat.toFixed(6) + ', ' + posisiTerkini.lng.toFixed(6) + ' (±' + posisiTerkini.akurasi + 'm)'; }
   else { dot.className = 'pulse wait'; txt.textContent = 'Menunggu sinyal GPS...'; }
@@ -1026,6 +1045,7 @@ function mulaiLaporKegiatan(namaTugas) {
   document.getElementById('keg-sesudah-hint').classList.remove('hidden');
   document.getElementById('btn-kirim-kegiatan').disabled = true;
   startCamera(document.getElementById('keg-video-sebelum'), 'kegSebelum');
+  document.getElementById('btn-flip-kegsebelum').onclick = () => toggleCamera(document.getElementById('keg-video-sebelum'), 'kegSebelum');
   const dot = document.getElementById('keg-loc-dot'), txt = document.getElementById('keg-loc-text');
   if (posisiTerkini) { dot.className = 'pulse ok'; txt.textContent = posisiTerkini.lat.toFixed(6) + ', ' + posisiTerkini.lng.toFixed(6) + ' (±' + posisiTerkini.akurasi + 'm)'; }
   else { dot.className = 'pulse wait'; txt.textContent = 'Menunggu sinyal GPS...'; }
@@ -1062,6 +1082,7 @@ document.getElementById('btn-shoot-sebelum').addEventListener('click', () => {
   document.getElementById('keg-sesudah-hint').classList.add('hidden');
   document.getElementById('keg-sesudah-wrap').classList.remove('hidden');
   startCamera(document.getElementById('keg-video-sesudah'), 'kegSesudah');
+  document.getElementById('btn-flip-kegsesudah').onclick = () => toggleCamera(document.getElementById('keg-video-sesudah'), 'kegSesudah');
   cekTombolKirimKegiatan();
 });
 document.getElementById('btn-retake-sebelum').addEventListener('click', async () => {
