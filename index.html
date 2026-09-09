@@ -311,7 +311,7 @@
 <div id="modal-presensi" class="modal-overlay hidden">
   <div class="modal-sheet">
     <h3 id="presensi-modal-title">Presensi Masuk</h3>
-    <div class="cam-wrap"><video id="presensi-video" autoplay playsinline muted></video><button class="cam-flip" id="btn-flip-presensi" type="button">🔄</button></div>
+    <div class="cam-wrap" id="presensi-camwrap"><video id="presensi-video" autoplay playsinline muted></video><button class="cam-flip" id="btn-flip-presensi" type="button">🔄</button></div>
     <canvas id="presensi-canvas" class="hidden"></canvas>
     <img id="presensi-shot" class="cam-shot hidden">
     <div class="cam-actions" id="presensi-shoot-wrap">
@@ -390,7 +390,7 @@
     </div>
     <div class="card">
       <div class="section-lbl">Foto Bukti</div>
-      <div class="cam-wrap"><video id="patroli-video2" autoplay playsinline muted></video><button class="cam-flip" id="btn-flip-patroli2" type="button">🔄</button></div>
+      <div class="cam-wrap" id="patroli-camwrap2"><video id="patroli-video2" autoplay playsinline muted></video><button class="cam-flip" id="btn-flip-patroli2" type="button">🔄</button></div>
       <canvas id="patroli-canvas" class="hidden"></canvas>
       <img id="patroli-shot" class="cam-shot hidden">
       <div class="cam-actions"><button class="btn btn-navy" id="btn-shoot-patroli">📸 Ambil Foto</button></div>
@@ -833,7 +833,7 @@ function bukaModalPresensi(jenis) {
   presensiFotoB64 = null;
   document.getElementById('presensi-modal-title').textContent = jenis === 'CLOCK IN' ? 'Presensi Masuk' : 'Presensi Pulang';
   document.getElementById('presensi-shot').classList.add('hidden');
-  document.getElementById('presensi-video').classList.remove('hidden');
+  document.getElementById('presensi-camwrap').classList.remove('hidden');
   document.getElementById('presensi-shoot-wrap').classList.remove('hidden');
   document.getElementById('presensi-retake-wrap').classList.add('hidden');
   document.getElementById('modal-presensi').classList.remove('hidden');
@@ -851,7 +851,7 @@ document.getElementById('btn-shoot-presensi').addEventListener('click', () => {
   presensiFotoB64 = base64Of(dataUrl);
   document.getElementById('presensi-shot').src = dataUrl;
   document.getElementById('presensi-shot').classList.remove('hidden');
-  document.getElementById('presensi-video').classList.add('hidden');
+  document.getElementById('presensi-camwrap').classList.add('hidden');
   document.getElementById('presensi-shoot-wrap').classList.add('hidden');
   document.getElementById('presensi-retake-wrap').classList.remove('hidden');
   stopCameraByKey('presensi');
@@ -859,7 +859,7 @@ document.getElementById('btn-shoot-presensi').addEventListener('click', () => {
 document.getElementById('btn-retake-presensi').addEventListener('click', async () => {
   presensiFotoB64 = null;
   document.getElementById('presensi-shot').classList.add('hidden');
-  document.getElementById('presensi-video').classList.remove('hidden');
+  document.getElementById('presensi-camwrap').classList.remove('hidden');
   document.getElementById('presensi-shoot-wrap').classList.remove('hidden');
   document.getElementById('presensi-retake-wrap').classList.add('hidden');
   await startCamera(document.getElementById('presensi-video'), 'presensi', 'user');
@@ -954,7 +954,7 @@ function mulaiLaporPatroli(namaPos) {
   document.getElementById('patroli-step-scan').classList.add('hidden');
   document.getElementById('patroli-step-lapor').classList.remove('hidden');
   document.getElementById('patroli-shot').classList.add('hidden');
-  document.getElementById('patroli-video2').classList.remove('hidden');
+  document.getElementById('patroli-camwrap2').classList.remove('hidden');
   document.getElementById('btn-shoot-patroli').classList.remove('hidden');
   document.getElementById('btn-retake-patroli').classList.add('hidden');
   document.getElementById('btn-kirim-patroli').disabled = true;
@@ -987,7 +987,7 @@ document.getElementById('btn-shoot-patroli').addEventListener('click', () => {
   patroliState.fotoB64 = base64Of(dataUrl);
   document.getElementById('patroli-shot').src = dataUrl;
   document.getElementById('patroli-shot').classList.remove('hidden');
-  document.getElementById('patroli-video2').classList.add('hidden');
+  document.getElementById('patroli-camwrap2').classList.add('hidden');
   document.getElementById('btn-shoot-patroli').classList.add('hidden');
   document.getElementById('btn-retake-patroli').classList.remove('hidden');
   document.getElementById('btn-kirim-patroli').disabled = !posisiTerkini;
@@ -996,7 +996,7 @@ document.getElementById('btn-shoot-patroli').addEventListener('click', () => {
 document.getElementById('btn-retake-patroli').addEventListener('click', async () => {
   patroliState.fotoB64 = null;
   document.getElementById('patroli-shot').classList.add('hidden');
-  document.getElementById('patroli-video2').classList.remove('hidden');
+  document.getElementById('patroli-camwrap2').classList.remove('hidden');
   document.getElementById('btn-shoot-patroli').classList.remove('hidden');
   document.getElementById('btn-retake-patroli').classList.add('hidden');
   document.getElementById('btn-kirim-patroli').disabled = true;
