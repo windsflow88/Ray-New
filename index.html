@@ -3,378 +3,373 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Absensi RAY</title>
+<title>Sistem Absensi Karyawan — RAY</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.js"></script>
 <style>
   :root{
-    --ink:#10141b; --panel:#1a2029; --panel2:#212a36; --border:#2b3441;
-    --text:#edf0f3; --muted:#8c97a6; --orange:#ff5a1f; --orange-dim:#4a2c1e;
-    --lime:#c6e21e; --lime-dim:#333d1a; --red:#e5484d; --red-dim:#3a2226;
-    --radius:6px;
-    --f-display:'Barlow Condensed',sans-serif; --f-body:'Inter',sans-serif; --f-mono:'JetBrains Mono',monospace;
+    --bg:#eef1f6; --card:#ffffff; --border:#e3e7ee;
+    --navy:#17385c; --navy-dark:#0f2740; --navy-soft:#eaf0f6;
+    --tan:#e4d9c4; --tan-text:#8a7a5c;
+    --text:#1f2937; --muted:#7c8798;
+    --green-bg:#e7f7ee; --green-text:#1a9a56; --green:#1a9a56;
+    --red-bg:#fdecea; --red-text:#d5453a; --red:#d5453a;
+    --radius:14px; --radius-sm:10px;
+    --shadow:0 1px 2px rgba(16,30,54,.04), 0 4px 14px rgba(16,30,54,.06);
+    --f-body:'Inter',sans-serif; --f-mono:'JetBrains Mono',monospace;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
-  body{
-    background:var(--ink); color:var(--text); font-family:var(--f-body);
-    min-height:100vh; min-height:100dvh; -webkit-tap-highlight-color:transparent;
-    padding-bottom:78px;
-  }
-  h1,h2,h3,.display{font-family:var(--f-display); font-weight:600; letter-spacing:.2px; margin:0;}
+  body{background:var(--bg); color:var(--text); font-family:var(--f-body); min-height:100vh; min-height:100dvh; -webkit-tap-highlight-color:transparent; padding-bottom:78px;}
+  h1,h2,h3{margin:0; font-weight:700;}
   .mono{font-family:var(--f-mono);}
   .muted{color:var(--muted);}
   .hidden{display:none !important;}
-  a{color:var(--orange);}
+  a{color:var(--navy); text-decoration:none;}
+  a:hover{text-decoration:underline;}
   button{font-family:var(--f-body);}
 
-  /* ===== ID badge header ===== */
-  .badge{
-    background:linear-gradient(180deg,var(--panel2),var(--panel));
-    border-bottom:1px solid var(--border);
-    padding:18px 18px 16px;
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 24px 100%, 0 calc(100% - 24px));
-    position:relative;
-  }
-  .badge-top{display:flex; justify-content:space-between; align-items:flex-start;}
-  .badge-brand{font-family:var(--f-display); font-size:13px; letter-spacing:1px; color:var(--muted);}
-  .badge-name{font-size:26px; line-height:1.1; margin-top:2px;}
-  .badge-role{
-    display:inline-block; margin-top:6px; padding:2px 8px; font-size:12px;
-    border:1px solid var(--border); border-radius:3px; color:var(--muted); font-family:var(--f-mono);
-  }
-  .badge-status{
-    text-align:right; font-family:var(--f-mono); font-size:12px;
-  }
-  .dot{display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:5px;}
-  .dot.lime{background:var(--lime);}
-  .dot.orange{background:var(--orange);}
-  .dot.muted{background:var(--muted);}
+  .screen{max-width:480px; margin:0 auto; padding:0 14px 24px;}
+  .center-screen{min-height:100vh; min-height:100dvh; display:flex; flex-direction:column; justify-content:center; padding:24px 14px;}
 
-  /* ===== layout ===== */
-  .screen{max-width:520px; margin:0 auto; padding:16px 16px 24px;}
-  .screen-body{max-width:520px; margin:0 auto; padding:16px 16px 24px;}
-  .center-screen{min-height:100vh; min-height:100dvh; display:flex; flex-direction:column; justify-content:center; padding:24px;}
-
-  .panel{
-    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
-    padding:16px; margin-bottom:12px;
+  /* ===== top banner ===== */
+  .top-banner{
+    background:linear-gradient(160deg,var(--navy),var(--navy-dark));
+    border-radius:0 0 22px 22px; padding:26px 20px 34px; text-align:center; color:#fff;
+    margin-bottom:-26px;
   }
-  .panel.accent-orange{border-left:3px solid var(--orange);}
-  .panel.accent-lime{border-left:3px solid var(--lime);}
-  .panel.accent-muted{border-left:3px solid var(--border);}
-
-  .section-title{
-    font-family:var(--f-display); font-size:15px; color:var(--muted);
-    margin:20px 0 8px; padding-bottom:6px; border-bottom:1px solid var(--border);
+  .top-banner .logo{
+    width:46px; height:46px; border-radius:12px; background:#fff; margin:0 auto 10px;
+    display:flex; align-items:center; justify-content:center; font-size:22px; box-shadow:var(--shadow);
+    overflow:hidden;
   }
-  .section-title:first-child{margin-top:0;}
+  .top-banner .logo img{width:100%; height:100%; object-fit:contain;}
+  .top-banner .ttl{font-size:14px; font-weight:600; opacity:.95;}
 
-  label{display:block; font-size:13px; color:var(--muted); margin:12px 0 6px;}
+  .card{
+    background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+    padding:16px; margin:14px 0; box-shadow:var(--shadow); position:relative; z-index:1;
+  }
+
+  /* ===== login ===== */
+  .login-card{max-width:420px; margin:0 auto; width:100%;}
+  label{display:block; font-size:12.5px; color:var(--muted); font-weight:600; margin:12px 0 6px;}
   label:first-child{margin-top:0;}
-  input[type=text],input[type=password],input[type=date],input[type=tel],select,textarea{
-    width:100%; background:var(--ink); border:1px solid var(--border); color:var(--text);
-    padding:11px 12px; border-radius:var(--radius); font-size:15px; font-family:var(--f-body);
+  select,input[type=text],input[type=password],input[type=date],input[type=tel],input[type=number],textarea{
+    width:100%; background:#fbfcfe; border:1px solid var(--border); color:var(--text);
+    padding:11px 12px; border-radius:var(--radius-sm); font-size:14.5px; font-family:var(--f-body);
   }
   textarea{resize:vertical; min-height:70px;}
-  input:focus,select:focus,textarea:focus,button:focus-visible{
-    outline:2px solid var(--orange); outline-offset:1px;
-  }
-  .pin-input{letter-spacing:8px; font-size:22px; font-family:var(--f-mono); text-align:center;}
+  input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--navy); outline-offset:1px;}
+  .pin-plain{letter-spacing:10px; font-size:20px; text-align:center; font-family:var(--f-mono);}
+  .login-links{text-align:center; margin-top:16px; font-size:13px; display:flex; flex-direction:column; gap:6px;}
 
   .btn{
-    display:flex; align-items:center; justify-content:center; gap:8px;
-    width:100%; padding:13px 16px; border-radius:var(--radius); border:1px solid transparent;
-    font-family:var(--f-display); font-size:17px; font-weight:600; letter-spacing:.3px;
-    cursor:pointer; margin-top:14px; transition:opacity .15s;
+    display:flex; align-items:center; justify-content:center; gap:8px; width:100%;
+    padding:13px 16px; border-radius:var(--radius-sm); border:1px solid transparent;
+    font-size:15px; font-weight:700; cursor:pointer; margin-top:14px; transition:opacity .15s, transform .1s;
   }
-  .btn:active{opacity:.8;}
-  .btn:disabled{opacity:.4; cursor:not-allowed;}
-  .btn-primary{background:var(--orange); color:#1a0d05;}
-  .btn-lime{background:var(--lime); color:#151b06;}
-  .btn-outline{background:transparent; border-color:var(--border); color:var(--text);}
-  .btn-danger{background:transparent; border-color:var(--red); color:var(--red);}
-  .btn-ghost{background:transparent; color:var(--muted); font-family:var(--f-body); font-weight:500; font-size:14px; padding:8px;}
+  .btn:active{transform:scale(.98);}
+  .btn:disabled{opacity:.55; cursor:not-allowed;}
+  .btn-navy{background:var(--navy); color:#fff;}
+  .btn-tan{background:var(--tan); color:var(--tan-text);}
+  .btn-outline{background:#fff; border-color:var(--border); color:var(--navy);}
+  .btn-danger{background:#fff; border-color:var(--red); color:var(--red);}
+  .btn-ghost{background:transparent; color:var(--muted); font-weight:600; font-size:13.5px; padding:8px;}
+  .btn-row{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .btn-row .btn{margin-top:0;}
 
-  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
-
-  .card-action{
-    display:flex; align-items:center; gap:12px; padding:14px; background:var(--panel);
-    border:1px solid var(--border); border-radius:var(--radius); cursor:pointer; margin-bottom:10px;
+  /* ===== dashboard: id card ===== */
+  .id-row{display:flex; align-items:center; gap:12px;}
+  .avatar{
+    width:44px; height:44px; border-radius:12px; background:var(--navy); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; flex-shrink:0;
   }
-  .card-action .ic{
-    width:38px; height:38px; border-radius:5px; background:var(--panel2); border:1px solid var(--border);
-    display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;
+  .id-name{font-size:16px; font-weight:700;}
+  .id-role{font-size:12.5px; color:var(--muted); margin-top:1px;}
+
+  /* clock card */
+  .clock-date{text-align:center; font-size:12.5px; color:var(--muted); font-weight:600;}
+  .clock-time{text-align:center; font-family:var(--f-mono); font-size:34px; font-weight:700; color:var(--navy); margin:2px 0 12px;}
+  .pill-row{display:flex; gap:8px; justify-content:center;}
+  .pill{
+    font-size:12px; font-weight:600; padding:6px 12px; border-radius:99px; background:var(--navy-soft); color:var(--navy);
   }
-  .card-action .body{flex:1; min-width:0;}
-  .card-action .ttl{font-family:var(--f-display); font-size:16px;}
-  .card-action .sub{font-size:12px; color:var(--muted); margin-top:1px;}
-  .card-action .chev{color:var(--muted);}
+  .pill.done{background:var(--green-bg); color:var(--green-text);}
 
-  .row{display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid var(--border); font-size:14px;}
-  .row:last-child{border-bottom:none;}
-  .row .k{color:var(--muted);}
-  .row .v{font-family:var(--f-mono); text-align:right;}
+  /* gps card */
+  .gps-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+  .gps-head .ttl{font-size:14px; font-weight:700; display:flex; align-items:center; gap:6px;}
+  .gps-head .ttl .dot{width:7px; height:7px; border-radius:50%; background:var(--green); display:inline-block;}
+  .gps-head a{font-size:12.5px; font-weight:600;}
+  .gps-stats{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;}
+  .gps-stat{background:var(--navy-soft); border-radius:var(--radius-sm); padding:10px 12px;}
+  .gps-stat .lb{font-size:10.5px; color:var(--muted); font-weight:700; letter-spacing:.3px;}
+  .gps-stat .val{font-size:16px; font-weight:700; font-family:var(--f-mono); margin-top:2px;}
+  .gps-banner{
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    background:var(--red-bg); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:10px;
+  }
+  .gps-banner.ok{background:var(--green-bg);}
+  .gps-banner .lb{font-size:10px; font-weight:700; letter-spacing:.3px; color:var(--muted);}
+  .gps-banner .val{font-size:13px; font-weight:700; color:var(--red-text);}
+  .gps-banner.ok .val{color:var(--green-text);}
+  .gps-map{height:170px; border-radius:var(--radius-sm); overflow:hidden; border:1px solid var(--border); background:#e5e9ef;}
 
+  .presensi-caption{display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin-top:6px; font-family:var(--f-mono);}
+
+  .section-lbl{font-size:13px; font-weight:700; color:var(--navy); margin:4px 0 2px;}
+
+  .riwayat-row{display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--border); font-size:13.5px;}
+  .riwayat-row:last-child{border-bottom:none;}
+  .riwayat-row .tgl{font-weight:600;}
+  .riwayat-row .jam{font-family:var(--f-mono); color:var(--muted);}
+
+  .empty-state{text-align:center; padding:26px 10px; color:var(--muted); font-size:13.5px;}
+  .empty-state .big{font-size:26px; margin-bottom:4px;}
+
+  /* top-back for sub pages */
   .top-back{
-    display:flex; align-items:center; gap:10px; padding:14px 16px; position:sticky; top:0;
-    background:var(--ink); z-index:5; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; gap:10px; padding:16px 14px 6px; position:sticky; top:0;
+    background:var(--bg); z-index:5;
   }
-  .top-back button{background:none; border:none; color:var(--text); font-size:20px; cursor:pointer; padding:4px 8px 4px 0;}
-  .top-back h2{font-size:19px;}
-
-  .toast{
-    position:fixed; left:16px; right:16px; bottom:90px; max-width:488px; margin:0 auto;
-    background:var(--panel2); border:1px solid var(--border); border-radius:var(--radius);
-    padding:12px 14px; font-size:14px; z-index:50; box-shadow:0 6px 20px rgba(0,0,0,.4);
-  }
-  .toast.ok{border-left:3px solid var(--lime);}
-  .toast.err{border-left:3px solid var(--red);}
+  .top-back button{background:#fff; border:1px solid var(--border); color:var(--navy); font-size:16px; cursor:pointer; padding:6px 10px; border-radius:8px;}
+  .top-back h2{font-size:17px;}
 
   /* camera */
-  .cam-wrap{position:relative; width:100%; aspect-ratio:3/4; background:#000; border-radius:var(--radius); overflow:hidden; border:1px solid var(--border);}
+  .cam-wrap{position:relative; width:100%; aspect-ratio:3/4; background:#000; border-radius:var(--radius-sm); overflow:hidden; border:1px solid var(--border);}
   .cam-wrap video, .cam-wrap canvas.frame{width:100%; height:100%; object-fit:cover; display:block;}
-  .cam-wrap .scan-box{
-    position:absolute; inset:18% 14%; border:2px solid var(--lime); border-radius:8px; pointer-events:none;
-    box-shadow:0 0 0 999px rgba(0,0,0,.35);
-  }
-  .cam-shot{width:100%; border-radius:var(--radius); border:1px solid var(--border); display:block;}
+  .cam-wrap .scan-box{position:absolute; inset:18% 14%; border:2px solid var(--green); border-radius:8px; pointer-events:none; box-shadow:0 0 0 999px rgba(0,0,0,.35);}
+  .cam-shot{width:100%; border-radius:var(--radius-sm); border:1px solid var(--border); display:block;}
   .cam-actions{display:flex; gap:10px; margin-top:10px;}
   .cam-actions .btn{margin-top:0;}
 
   .loc-box{display:flex; align-items:center; gap:10px; font-family:var(--f-mono); font-size:12px;}
   .loc-box .pulse{width:8px; height:8px; border-radius:50%; background:var(--muted); flex-shrink:0;}
-  .loc-box .pulse.ok{background:var(--lime);}
-  .loc-box .pulse.wait{background:var(--orange); animation:pulse 1s infinite;}
+  .loc-box .pulse.ok{background:var(--green);}
+  .loc-box .pulse.wait{background:#e8a33d; animation:pulse 1s infinite;}
   @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
-
-  .empty-state{text-align:center; padding:40px 16px; color:var(--muted);}
-  .empty-state .big{font-size:34px; margin-bottom:6px;}
-
-  /* bottom nav */
-  .navbar{
-    position:fixed; bottom:0; left:0; right:0; background:var(--panel);
-    border-top:1px solid var(--border); display:flex; z-index:20;
-    padding-bottom:env(safe-area-inset-bottom);
-  }
-  .navbar button{
-    flex:1; background:none; border:none; color:var(--muted); padding:9px 4px 7px;
-    display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer;
-  }
-  .navbar button .ic{font-size:19px;}
-  .navbar button .lb{font-size:11px; font-family:var(--f-body); font-weight:500;}
-  .navbar button.active{color:var(--orange);}
-  .navbar button.active .lb{color:var(--text);}
-
-  .pin-dots{display:flex; gap:12px; justify-content:center; margin:18px 0;}
-  .pin-dots span{width:14px; height:14px; border-radius:50%; border:1.5px solid var(--border);}
-  .pin-dots span.filled{background:var(--orange); border-color:var(--orange);}
-  .keypad{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; max-width:280px; margin:0 auto;}
-  .keypad button{
-    aspect-ratio:1; border-radius:50%; background:var(--panel2); border:1px solid var(--border);
-    color:var(--text); font-size:22px; font-family:var(--f-mono); cursor:pointer;
-  }
-  .keypad button:active{background:var(--border);}
 
   .divider-or{display:flex; align-items:center; gap:10px; color:var(--muted); font-size:12px; margin:16px 0;}
   .divider-or::before,.divider-or::after{content:''; flex:1; height:1px; background:var(--border);}
+
+  /* modal */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(15,25,40,.55); z-index:60;
+    display:flex; align-items:flex-end; justify-content:center;
+  }
+  .modal-sheet{
+    background:var(--card); width:100%; max-width:480px; border-radius:20px 20px 0 0;
+    padding:18px 16px calc(20px + env(safe-area-inset-bottom)); max-height:88vh; overflow-y:auto;
+  }
+  .modal-sheet h3{font-size:16px; margin-bottom:12px;}
+
+  /* bottom nav */
+  .navbar{
+    position:fixed; bottom:0; left:0; right:0; background:#fff;
+    border-top:1px solid var(--border); display:flex; z-index:20;
+    padding-bottom:env(safe-area-inset-bottom); box-shadow:0 -2px 10px rgba(16,30,54,.05);
+  }
+  .navbar button{flex:1; background:none; border:none; color:var(--muted); padding:9px 4px 7px; display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer;}
+  .navbar button .ic{font-size:19px;}
+  .navbar button .lb{font-size:11px; font-weight:600;}
+  .navbar button.active{color:var(--navy);}
+
+  .toast{
+    position:fixed; left:16px; right:16px; bottom:90px; max-width:452px; margin:0 auto;
+    background:#fff; border:1px solid var(--border); border-radius:var(--radius-sm);
+    padding:12px 14px; font-size:14px; z-index:70; box-shadow:0 8px 24px rgba(16,30,54,.18);
+  }
+  .toast.ok{border-left:4px solid var(--green);}
+  .toast.err{border-left:4px solid var(--red);}
 </style>
 </head>
 <body>
 
 <!-- ================= LOGIN ================= -->
 <section id="screen-login" class="screen center-screen">
-  <div style="text-align:center; margin-bottom:26px;">
-    <div class="display muted" style="font-size:13px; letter-spacing:2px;">PT. RAY MITRA PERKASA</div>
-    <h1 style="font-size:32px; margin-top:4px;">Absensi RAY</h1>
+  <div class="top-banner">
+    <div class="logo" id="logo-slot-login">🅡</div>
+    <div class="ttl">Sistem Absensi Karyawan</div>
   </div>
+  <div class="card login-card">
+    <label>Pilih Nama Anda</label>
+    <select id="login-nama"><option value="">-- Pilih Nama --</option></select>
 
-  <label for="login-nama">Nama</label>
-  <select id="login-nama"><option value="">Pilih nama...</option></select>
+    <label>PIN (4 digit)</label>
+    <input type="password" id="login-pin" class="pin-plain" maxlength="4" inputmode="numeric" placeholder="••••">
 
-  <label>PIN (4 digit)</label>
-  <div class="pin-dots" id="login-pindots">
-    <span></span><span></span><span></span><span></span>
+    <button class="btn btn-navy" id="btn-login">Masuk</button>
+
+    <div class="login-links">
+      <span>Belum punya akun? <a href="#" id="link-daftar">Daftar di sini</a></span>
+      <span>Admin? <a href="admin.html">Masuk di sini</a></span>
+    </div>
   </div>
-  <div class="keypad" id="login-keypad"></div>
-
-  <button class="btn btn-primary" id="btn-login" style="max-width:280px; margin:20px auto 0;">Masuk</button>
-
-  <div class="divider-or">atau</div>
-  <button class="btn btn-outline" id="btn-goto-daftar">Daftar sebagai karyawan baru</button>
 </section>
 
 <!-- ================= DAFTAR BARU ================= -->
 <section id="screen-daftar" class="screen hidden">
   <div class="top-back"><button id="back-daftar">←</button><h2>Daftar Karyawan Baru</h2></div>
-  <div class="screen-body" style="padding-top:8px;">
-    <div class="panel">
-      <label>Nama Lengkap</label>
-      <input type="text" id="daftar-nama" placeholder="Sesuai KTP">
+  <div class="card">
+    <label>Nama Lengkap</label>
+    <input type="text" id="daftar-nama" placeholder="Sesuai KTP">
 
-      <label>Bagian Kerja</label>
-      <select id="daftar-bagian">
-        <option value="Security">Security</option>
-        <option value="Cleaning Service">Cleaning Service</option>
-        <option value="Administrasi">Administrasi</option>
-        <option value="Lainnya">Lainnya</option>
-      </select>
+    <label>Bagian Kerja</label>
+    <select id="daftar-bagian">
+      <option value="Security">Security</option>
+      <option value="Cleaning Service">Cleaning Service</option>
+      <option value="Administrasi">Administrasi</option>
+      <option value="Lainnya">Lainnya</option>
+    </select>
 
-      <label>Buat PIN (4 digit angka)</label>
-      <input type="tel" maxlength="4" inputmode="numeric" id="daftar-pin" placeholder="••••">
+    <label>Buat PIN (4 digit angka)</label>
+    <input type="tel" maxlength="4" inputmode="numeric" id="daftar-pin" placeholder="••••">
 
-      <label>Ulangi PIN</label>
-      <input type="tel" maxlength="4" inputmode="numeric" id="daftar-pin2" placeholder="••••">
+    <label>Ulangi PIN</label>
+    <input type="tel" maxlength="4" inputmode="numeric" id="daftar-pin2" placeholder="••••">
 
-      <button class="btn btn-primary" id="btn-submit-daftar">Kirim Pendaftaran</button>
-      <p class="muted" style="font-size:12px; margin-top:10px;">Akun akan aktif setelah disetujui admin. Kamu belum bisa login sebelum disetujui.</p>
-    </div>
+    <button class="btn btn-navy" id="btn-submit-daftar">Kirim Pendaftaran</button>
+    <p class="muted" style="font-size:12px; margin-top:10px;">Akun akan aktif setelah disetujui admin.</p>
   </div>
 </section>
 
-<!-- ================= HOME ================= -->
+<!-- ================= HOME / DASHBOARD ================= -->
 <section id="screen-home" class="screen hidden">
-  <div class="badge">
-    <div class="badge-top">
+  <div class="top-banner">
+    <div class="logo" id="logo-slot-home">🅡</div>
+    <div class="ttl">Sistem Absensi Karyawan</div>
+  </div>
+
+  <div class="card id-row">
+    <div class="avatar" id="home-avatar">-</div>
+    <div>
+      <div class="id-name" id="home-nama">-</div>
+      <div class="id-role" id="home-bagian">-</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="clock-date" id="home-tanggal">-</div>
+    <div class="clock-time" id="home-jam">--:--:--</div>
+    <div class="pill-row">
+      <span class="pill" id="pill-in">Belum Clock In</span>
+      <span class="pill" id="pill-out">Belum Clock Out</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="gps-head">
+      <span class="ttl"><span class="dot" id="gps-dot"></span>Status Geolokasi Realtime</span>
+      <a href="#" id="link-kalibrasi">📍 Kalibrasi GPS</a>
+    </div>
+    <div class="gps-stats">
+      <div class="gps-stat"><div class="lb">JARAK KANTOR</div><div class="val" id="gps-jarak">- m</div></div>
+      <div class="gps-stat"><div class="lb">AKURASI GPS</div><div class="val" id="gps-akurasi">± - m</div></div>
+    </div>
+    <div class="gps-banner" id="gps-banner">
+      <div><div class="lb">STATUS KEHADIRAN</div><div class="val" id="gps-status">Mencari lokasi...</div></div>
+      <div style="text-align:right;"><div class="lb">LOKASI TERDEKAT</div><div class="val" id="gps-lokasi" style="color:var(--text);">-</div></div>
+    </div>
+    <div class="gps-map" id="gps-map"></div>
+  </div>
+
+  <div class="card">
+    <div class="btn-row">
       <div>
-        <div class="badge-brand">ID KARYAWAN</div>
-        <div class="badge-name" id="home-nama">-</div>
-        <div class="badge-role" id="home-bagian">-</div>
+        <button class="btn btn-tan" id="btn-presensi-masuk" disabled>Presensi Masuk</button>
+        <div class="presensi-caption"><span>Masuk:</span><span class="mono" id="cap-masuk">--:--</span></div>
       </div>
-      <div class="badge-status">
-        <div id="home-status-in"><span class="dot muted"></span>Belum Clock In</div>
-        <div id="home-status-out" style="margin-top:4px;"><span class="dot muted"></span>Belum Clock Out</div>
+      <div>
+        <button class="btn btn-tan" id="btn-presensi-pulang" disabled>Presensi Pulang</button>
+        <div class="presensi-caption"><span>Pulang:</span><span class="mono" id="cap-pulang">--:--</span></div>
       </div>
     </div>
   </div>
 
-  <div class="screen-body" style="padding-top:14px;">
-    <div class="section-title">Aksi Cepat</div>
-    <div class="card-action" data-goto="absen">
-      <div class="ic">🕓</div>
-      <div class="body"><div class="ttl">Absen</div><div class="sub" id="home-absen-sub">Clock In / Clock Out</div></div>
-      <div class="chev">›</div>
-    </div>
-    <div class="card-action" data-goto="ijin">
-      <div class="ic">📝</div>
-      <div class="body"><div class="ttl">Ajukan Ijin / Cuti</div><div class="sub">Lampirkan bukti foto/surat</div></div>
-      <div class="chev">›</div>
-    </div>
-    <div class="card-action" data-goto="riwayat">
-      <div class="ic">📅</div>
-      <div class="body"><div class="ttl">Riwayat Absensi</div><div class="sub">7 hari terakhir</div></div>
-      <div class="chev">›</div>
-    </div>
-    <div class="card-action hidden" id="home-card-patroli" data-goto="patroli">
-      <div class="ic">🛡️</div>
-      <div class="body"><div class="ttl">Patroli</div><div class="sub">Scan titik pos & lapor</div></div>
-      <div class="chev">›</div>
-    </div>
-    <div class="card-action hidden" id="home-card-kegiatan" data-goto="kegiatan">
-      <div class="ic">🧹</div>
-      <div class="body"><div class="ttl">Laporan Kegiatan</div><div class="sub">Lapor tugas kebersihan selesai</div></div>
-      <div class="chev">›</div>
-    </div>
+  <button class="btn btn-outline" id="btn-goto-ijin">📝 Ajukan Ijin / Cuti</button>
+  <button class="btn btn-outline hidden" id="btn-goto-patroli">🛡️ Lapor Patroli</button>
+  <button class="btn btn-outline hidden" id="btn-goto-kegiatan">🧹 Laporan Kegiatan</button>
 
-    <button class="btn btn-ghost" id="btn-logout" style="margin-top:18px;">Keluar</button>
+  <div class="card">
+    <div class="section-lbl">🕓 Riwayat 7 Hari Terakhir</div>
+    <div id="home-riwayat"><div class="empty-state">Memuat...</div></div>
   </div>
+
+  <p class="muted" style="text-align:center; font-size:12px; margin:6px 0 0;">PT. Ray Mitra Perkasa</p>
 </section>
 
-<!-- ================= ABSEN ================= -->
-<section id="screen-absen" class="screen hidden">
-  <div class="top-back"><button data-back="home">←</button><h2>Absen</h2></div>
-  <div class="screen-body" style="padding-top:8px;">
-
-    <div class="panel accent-muted" id="absen-status-panel">
-      <div class="row"><span class="k">Clock In</span><span class="v" id="absen-jam-in">-</span></div>
-      <div class="row"><span class="k">Clock Out</span><span class="v" id="absen-jam-out">-</span></div>
+<!-- ================= PRESENSI MODAL (kamera) ================= -->
+<div id="modal-presensi" class="modal-overlay hidden">
+  <div class="modal-sheet">
+    <h3 id="presensi-modal-title">Presensi Masuk</h3>
+    <div class="cam-wrap"><video id="presensi-video" autoplay playsinline muted></video></div>
+    <canvas id="presensi-canvas" class="hidden"></canvas>
+    <img id="presensi-shot" class="cam-shot hidden">
+    <div class="cam-actions" id="presensi-shoot-wrap">
+      <button class="btn btn-navy" id="btn-shoot-presensi">📸 Ambil Foto & Kirim</button>
     </div>
-
-    <div id="absen-step-idle">
-      <button class="btn btn-primary" id="btn-mulai-absen">Mulai Absen</button>
+    <div class="cam-actions hidden" id="presensi-retake-wrap">
+      <button class="btn btn-outline" id="btn-retake-presensi">Ulangi</button>
+      <button class="btn btn-navy" id="btn-kirim-presensi">Kirim</button>
     </div>
-
-    <div id="absen-step-cam" class="hidden">
-      <div class="section-title">1. Ambil Foto</div>
-      <div class="cam-wrap"><video id="absen-video" autoplay playsinline muted></video></div>
-      <canvas id="absen-canvas" class="hidden"></canvas>
-      <img id="absen-shot" class="cam-shot hidden">
-      <div class="cam-actions">
-        <button class="btn btn-lime" id="btn-shoot-absen">📸 Ambil Foto</button>
-      </div>
-      <div class="cam-actions hidden" id="absen-retake-wrap">
-        <button class="btn btn-outline" id="btn-retake-absen">Ulangi</button>
-        <button class="btn btn-primary" id="btn-lanjut-lokasi-absen">Lanjut</button>
-      </div>
-
-      <div class="section-title">2. Lokasi GPS</div>
-      <div class="panel">
-        <div class="loc-box"><span class="pulse" id="absen-loc-dot"></span><span id="absen-loc-text">Menunggu lokasi...</span></div>
-      </div>
-
-      <button class="btn btn-primary" id="btn-kirim-absen" disabled>Kirim Absen</button>
-      <button class="btn btn-ghost" id="btn-batal-absen">Batal</button>
-    </div>
+    <button class="btn btn-ghost" id="btn-batal-presensi">Batal</button>
   </div>
-</section>
-
-<!-- ================= RIWAYAT ================= -->
-<section id="screen-riwayat" class="screen hidden">
-  <div class="top-back"><button data-back="home">←</button><h2>Riwayat Absensi</h2></div>
-  <div class="screen-body" style="padding-top:8px;" id="riwayat-list"></div>
-</section>
+</div>
 
 <!-- ================= IJIN ================= -->
 <section id="screen-ijin" class="screen hidden">
   <div class="top-back"><button data-back="home">←</button><h2>Ajukan Ijin</h2></div>
-  <div class="screen-body" style="padding-top:8px;">
-    <div class="panel">
-      <label>Jenis Ijin</label>
-      <select id="ijin-jenis">
-        <option value="Sakit">Sakit</option>
-        <option value="Cuti Tahunan">Cuti Tahunan</option>
-        <option value="Izin Keperluan Pribadi">Izin Keperluan Pribadi</option>
-        <option value="Lainnya">Lainnya</option>
-      </select>
+  <div class="card">
+    <label>Jenis Ijin</label>
+    <select id="ijin-jenis">
+      <option value="Sakit">Sakit</option>
+      <option value="Cuti Tahunan">Cuti Tahunan</option>
+      <option value="Izin Keperluan Pribadi">Izin Keperluan Pribadi</option>
+      <option value="Lainnya">Lainnya</option>
+    </select>
 
-      <label>Tanggal Ijin</label>
-      <input type="date" id="ijin-tanggal">
+    <label>Tanggal Ijin</label>
+    <input type="date" id="ijin-tanggal">
 
-      <label>Keterangan</label>
-      <textarea id="ijin-keterangan" placeholder="Jelaskan alasan singkat"></textarea>
+    <label>Keterangan</label>
+    <textarea id="ijin-keterangan" placeholder="Jelaskan alasan singkat"></textarea>
 
-      <label>Foto Bukti (surat/foto)</label>
-      <div id="ijin-cam-open">
-        <button class="btn btn-outline" id="btn-buka-kamera-ijin">📷 Buka Kamera</button>
-      </div>
-      <div id="ijin-cam-live" class="hidden">
-        <div class="cam-wrap"><video id="ijin-video" autoplay playsinline muted></video></div>
-        <div class="cam-actions"><button class="btn btn-lime" id="btn-shoot-ijin">📸 Ambil Foto</button></div>
-      </div>
-      <canvas id="ijin-canvas" class="hidden"></canvas>
-      <img id="ijin-shot" class="cam-shot hidden" style="margin-top:8px;">
-      <button class="btn btn-ghost hidden" id="btn-retake-ijin">Ambil ulang foto</button>
-
-      <button class="btn btn-primary" id="btn-kirim-ijin">Kirim Pengajuan</button>
+    <label>Foto Bukti (surat/foto)</label>
+    <div id="ijin-cam-open">
+      <button class="btn btn-outline" id="btn-buka-kamera-ijin">📷 Buka Kamera</button>
     </div>
+    <div id="ijin-cam-live" class="hidden">
+      <div class="cam-wrap"><video id="ijin-video" autoplay playsinline muted></video></div>
+      <div class="cam-actions"><button class="btn btn-navy" id="btn-shoot-ijin">📸 Ambil Foto</button></div>
+    </div>
+    <canvas id="ijin-canvas" class="hidden"></canvas>
+    <img id="ijin-shot" class="cam-shot hidden" style="margin-top:8px;">
+    <button class="btn btn-ghost hidden" id="btn-retake-ijin">Ambil ulang foto</button>
+
+    <button class="btn btn-navy" id="btn-kirim-ijin">Kirim Pengajuan</button>
   </div>
 </section>
 
 <!-- ================= PATROLI ================= -->
 <section id="screen-patroli" class="screen hidden">
   <div class="top-back"><button data-back="home">←</button><h2>Patroli</h2></div>
-  <div class="screen-body" style="padding-top:8px;">
 
-    <div id="patroli-step-pilih">
-      <div class="section-title">Pilih Titik Pos</div>
-      <button class="btn btn-lime" id="btn-scan-patroli">🔳 Scan QR Pos</button>
+  <div id="patroli-step-pilih">
+    <div class="card">
+      <div class="section-lbl">Pilih Titik Pos</div>
+      <button class="btn btn-navy" id="btn-scan-patroli">🔳 Scan QR Pos</button>
       <div class="divider-or">atau pilih manual</div>
       <select id="patroli-pilih-manual"><option value="">Pilih pos...</option></select>
       <button class="btn btn-outline" id="btn-pilih-manual-patroli">Pilih</button>
     </div>
+  </div>
 
-    <div id="patroli-step-scan" class="hidden">
+  <div id="patroli-step-scan" class="hidden">
+    <div class="card">
       <div class="cam-wrap">
         <video id="patroli-video" autoplay playsinline muted></video>
         <div class="scan-box"></div>
@@ -382,26 +377,28 @@
       <p class="muted" style="font-size:13px; text-align:center; margin-top:8px;">Arahkan kamera ke kode QR di titik pos</p>
       <button class="btn btn-ghost" id="btn-batal-scan-patroli">Batal Scan</button>
     </div>
+  </div>
 
-    <div id="patroli-step-lapor" class="hidden">
-      <div class="panel accent-lime">
-        <div class="row"><span class="k">Titik Pos</span><span class="v" id="patroli-nama-pos">-</span></div>
-      </div>
-
-      <div class="section-title">Foto Bukti</div>
+  <div id="patroli-step-lapor" class="hidden">
+    <div class="card">
+      <div class="section-lbl">Titik Pos: <span id="patroli-nama-pos">-</span></div>
+    </div>
+    <div class="card">
+      <div class="section-lbl">Foto Bukti</div>
       <div class="cam-wrap"><video id="patroli-video2" autoplay playsinline muted></video></div>
       <canvas id="patroli-canvas" class="hidden"></canvas>
       <img id="patroli-shot" class="cam-shot hidden">
-      <div class="cam-actions"><button class="btn btn-lime" id="btn-shoot-patroli">📸 Ambil Foto</button></div>
+      <div class="cam-actions"><button class="btn btn-navy" id="btn-shoot-patroli">📸 Ambil Foto</button></div>
       <button class="btn btn-outline hidden" id="btn-retake-patroli">Ambil Ulang</button>
-
-      <div class="section-title">Lokasi GPS</div>
-      <div class="panel"><div class="loc-box"><span class="pulse" id="patroli-loc-dot"></span><span id="patroli-loc-text">Menunggu lokasi...</span></div></div>
-
+    </div>
+    <div class="card">
+      <div class="section-lbl">Lokasi GPS</div>
+      <div class="loc-box"><span class="pulse" id="patroli-loc-dot"></span><span id="patroli-loc-text">Menunggu lokasi...</span></div>
+    </div>
+    <div class="card">
       <label>Catatan (opsional)</label>
       <textarea id="patroli-catatan" placeholder="Temuan/kondisi di pos ini..."></textarea>
-
-      <button class="btn btn-primary" id="btn-kirim-patroli" disabled>Kirim Laporan Patroli</button>
+      <button class="btn btn-navy" id="btn-kirim-patroli" disabled>Kirim Laporan Patroli</button>
       <button class="btn btn-ghost" id="btn-batal-patroli">Batal</button>
     </div>
   </div>
@@ -410,17 +407,19 @@
 <!-- ================= KEGIATAN (CLEANING) ================= -->
 <section id="screen-kegiatan" class="screen hidden">
   <div class="top-back"><button data-back="home">←</button><h2>Laporan Kegiatan</h2></div>
-  <div class="screen-body" style="padding-top:8px;">
 
-    <div id="kegiatan-step-pilih">
-      <div class="section-title">Pilih Tugas</div>
-      <button class="btn btn-lime" id="btn-scan-kegiatan">🔳 Scan QR Tugas</button>
+  <div id="kegiatan-step-pilih">
+    <div class="card">
+      <div class="section-lbl">Pilih Tugas</div>
+      <button class="btn btn-navy" id="btn-scan-kegiatan">🔳 Scan QR Tugas</button>
       <div class="divider-or">atau pilih manual</div>
       <select id="kegiatan-pilih-manual"><option value="">Pilih tugas...</option></select>
       <button class="btn btn-outline" id="btn-pilih-manual-kegiatan">Pilih</button>
     </div>
+  </div>
 
-    <div id="kegiatan-step-scan" class="hidden">
+  <div id="kegiatan-step-scan" class="hidden">
+    <div class="card">
       <div class="cam-wrap">
         <video id="kegiatan-video" autoplay playsinline muted></video>
         <div class="scan-box"></div>
@@ -428,41 +427,48 @@
       <p class="muted" style="font-size:13px; text-align:center; margin-top:8px;">Arahkan kamera ke kode QR di lokasi tugas</p>
       <button class="btn btn-ghost" id="btn-batal-scan-kegiatan">Batal Scan</button>
     </div>
+  </div>
 
-    <div id="kegiatan-step-lapor" class="hidden">
-      <div class="panel accent-lime">
-        <div class="row"><span class="k">Tugas</span><span class="v" id="kegiatan-nama-tugas">-</span></div>
-        <div class="row"><span class="k">Area</span><span class="v" id="kegiatan-nama-area">-</span></div>
-      </div>
+  <div id="kegiatan-step-lapor" class="hidden">
+    <div class="card">
+      <div class="section-lbl">Tugas: <span id="kegiatan-nama-tugas">-</span></div>
+      <div class="muted" style="font-size:13px;">Area: <span id="kegiatan-nama-area">-</span></div>
+    </div>
 
-      <div class="section-title">Foto Sebelum</div>
+    <div class="card">
+      <div class="section-lbl">Foto Sebelum</div>
       <div id="keg-sebelum-cam">
         <div class="cam-wrap"><video id="keg-video-sebelum" autoplay playsinline muted></video></div>
-        <div class="cam-actions"><button class="btn btn-lime" id="btn-shoot-sebelum">📸 Ambil Foto Sebelum</button></div>
+        <div class="cam-actions"><button class="btn btn-navy" id="btn-shoot-sebelum">📸 Ambil Foto Sebelum</button></div>
       </div>
       <canvas id="keg-canvas-sebelum" class="hidden"></canvas>
       <img id="keg-shot-sebelum" class="cam-shot hidden">
       <button class="btn btn-ghost hidden" id="btn-retake-sebelum">Ambil ulang</button>
+    </div>
 
-      <div class="section-title">Foto Sesudah</div>
+    <div class="card">
+      <div class="section-lbl">Foto Sesudah</div>
       <div id="keg-sesudah-wrap" class="hidden">
         <div id="keg-sesudah-cam">
           <div class="cam-wrap"><video id="keg-video-sesudah" autoplay playsinline muted></video></div>
-          <div class="cam-actions"><button class="btn btn-lime" id="btn-shoot-sesudah">📸 Ambil Foto Sesudah</button></div>
+          <div class="cam-actions"><button class="btn btn-navy" id="btn-shoot-sesudah">📸 Ambil Foto Sesudah</button></div>
         </div>
         <canvas id="keg-canvas-sesudah" class="hidden"></canvas>
         <img id="keg-shot-sesudah" class="cam-shot hidden">
         <button class="btn btn-ghost hidden" id="btn-retake-sesudah">Ambil ulang</button>
       </div>
-      <p class="muted hidden" id="keg-sesudah-hint" style="font-size:12px;">Ambil foto "sebelum" dulu.</p>
+      <p class="muted" id="keg-sesudah-hint" style="font-size:12px;">Ambil foto "sebelum" dulu.</p>
+    </div>
 
-      <div class="section-title">Lokasi GPS</div>
-      <div class="panel"><div class="loc-box"><span class="pulse" id="keg-loc-dot"></span><span id="keg-loc-text">Menunggu lokasi...</span></div></div>
+    <div class="card">
+      <div class="section-lbl">Lokasi GPS</div>
+      <div class="loc-box"><span class="pulse" id="keg-loc-dot"></span><span id="keg-loc-text">Menunggu lokasi...</span></div>
+    </div>
 
+    <div class="card">
       <label>Catatan (opsional)</label>
       <textarea id="keg-catatan" placeholder="Catatan tambahan..."></textarea>
-
-      <button class="btn btn-primary" id="btn-kirim-kegiatan" disabled>Kirim Laporan</button>
+      <button class="btn btn-navy" id="btn-kirim-kegiatan" disabled>Kirim Laporan</button>
       <button class="btn btn-ghost" id="btn-batal-kegiatan">Batal</button>
     </div>
   </div>
@@ -471,25 +477,25 @@
 <div id="toast" class="toast hidden"></div>
 
 <nav class="navbar hidden" id="navbar">
-  <button data-goto="home"><span class="ic">🏠</span><span class="lb">Beranda</span></button>
-  <button data-goto="absen"><span class="ic">🕓</span><span class="lb">Absen</span></button>
-  <button data-goto="ijin"><span class="ic">📝</span><span class="lb">Ijin</span></button>
-  <button data-goto="riwayat"><span class="ic">📅</span><span class="lb">Riwayat</span></button>
-  <button id="nav-extra" class="hidden" data-goto=""><span class="ic">🛡️</span><span class="lb">-</span></button>
+  <button data-nav="home"><span class="ic">🏠</span><span class="lb">Dashboard</span></button>
+  <button data-nav="sync"><span class="ic">🔄</span><span class="lb">Sync Data</span></button>
+  <button data-nav="logout"><span class="ic">⏻</span><span class="lb">Logout</span></button>
 </nav>
 
 <script>
 /* ====================== KONFIGURASI ====================== */
 const API_URL = 'https://script.google.com/macros/s/AKfycbxXUWLfH0gYfs9rHndGbY0eLvV_TcfllYAUQ7uHqcZELrJux1vUCp-33wGdYkoRXKZH/exec';
+const LOGO_URL = ''; // isi dengan URL logo perusahaan kalau sudah ada, kosongkan untuk pakai ikon huruf
 
 /* ====================== STATE ====================== */
 let sesi = { nama: '', pin: '', bagianKerja: '' };
-let pinBuffer = '';
-let cameraStreams = {}; // key -> MediaStream
+let cameraStreams = {};
 let daftarLokasiKerja = [];
 let daftarTitikPatroli = [];
 let daftarTugasKebersihan = [];
-let capturedData = {}; // sementara nampung base64 foto per konteks
+let posisiTerkini = null;        // {lat,lng,akurasi} dari watchPosition
+let watchId = null;
+let leafletMap = null, leafletMarker = null;
 
 /* ====================== HELPER API ====================== */
 async function api(action, payload) {
@@ -504,7 +510,6 @@ async function api(action, payload) {
     return { sukses: false, pesan: 'Gagal terhubung ke server. Cek koneksi internet Anda.' };
   }
 }
-
 function showToast(pesan, ok) {
   const t = document.getElementById('toast');
   t.textContent = pesan;
@@ -512,42 +517,56 @@ function showToast(pesan, ok) {
   clearTimeout(showToast._tm);
   showToast._tm = setTimeout(() => t.classList.add('hidden'), 3800);
 }
-
 function setBusy(btn, busy, labelBusy, labelNormal) {
   btn.disabled = busy;
   btn.textContent = busy ? (labelBusy || 'Memproses...') : labelNormal;
 }
+if (LOGO_URL) {
+  document.querySelectorAll('.logo').forEach(el => { el.innerHTML = '<img src="' + LOGO_URL + '" alt="logo">'; });
+}
 
 /* ====================== NAVIGASI ====================== */
-const NAV_SCREENS = ['home', 'absen', 'ijin', 'riwayat', 'patroli', 'kegiatan'];
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
   document.getElementById('screen-' + id).classList.remove('hidden');
   const nav = document.getElementById('navbar');
-  if (NAV_SCREENS.includes(id) && sesi.nama) {
-    nav.classList.remove('hidden');
-    document.querySelectorAll('.navbar button').forEach(b => b.classList.remove('active'));
-    const target = document.querySelector('.navbar button[data-goto="' + id + '"]');
-    if (target) target.classList.add('active');
-  } else {
-    nav.classList.add('hidden');
-  }
+  nav.classList.toggle('hidden', !(id === 'home' && sesi.nama));
+  document.querySelectorAll('.navbar button').forEach(b => b.classList.remove('active'));
+  if (id === 'home') document.querySelector('.navbar button[data-nav="home"]').classList.add('active');
   stopAllCameras();
   window.scrollTo(0, 0);
 
-  if (id === 'absen') resetAbsenScreen();
-  if (id === 'riwayat') muatRiwayat();
   if (id === 'ijin') resetIjinScreen();
   if (id === 'patroli') resetPatroliScreen();
   if (id === 'kegiatan') resetKegiatanScreen();
   if (id === 'home') muatHome();
 }
-document.querySelectorAll('[data-goto]').forEach(el => {
-  el.addEventListener('click', () => { if (el.dataset.goto) showScreen(el.dataset.goto); });
+document.querySelectorAll('[data-back]').forEach(el => el.addEventListener('click', () => showScreen(el.dataset.back)));
+document.getElementById('btn-goto-ijin').addEventListener('click', () => showScreen('ijin'));
+document.getElementById('btn-goto-patroli').addEventListener('click', () => showScreen('patroli'));
+document.getElementById('btn-goto-kegiatan').addEventListener('click', () => showScreen('kegiatan'));
+document.getElementById('link-daftar').addEventListener('click', (e) => { e.preventDefault(); showScreen('daftar'); });
+document.getElementById('back-daftar').addEventListener('click', () => showScreen('login'));
+
+document.getElementById('navbar').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-nav]');
+  if (!btn) return;
+  if (btn.dataset.nav === 'home') showScreen('home');
+  if (btn.dataset.nav === 'logout') doLogout();
+  if (btn.dataset.nav === 'sync') syncData();
 });
-document.querySelectorAll('[data-back]').forEach(el => {
-  el.addEventListener('click', () => showScreen(el.dataset.back));
-});
+async function syncData() {
+  showToast('Menyinkronkan data...', true);
+  await muatDataMasterUntukSesi();
+  await refreshStatus();
+  muatHome();
+  showToast('Data berhasil disinkronkan.', true);
+}
+function doLogout() {
+  if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
+  sesi = { nama: '', pin: '', bagianKerja: '' };
+  showScreen('login');
+}
 
 /* ====================== KAMERA ====================== */
 async function startCamera(videoEl, key) {
@@ -565,9 +584,7 @@ function stopCameraByKey(key) {
   const s = cameraStreams[key];
   if (s) { s.getTracks().forEach(t => t.stop()); delete cameraStreams[key]; }
 }
-function stopAllCameras() {
-  Object.keys(cameraStreams).forEach(stopCameraByKey);
-}
+function stopAllCameras() { Object.keys(cameraStreams).forEach(stopCameraByKey); }
 function captureFrame(videoEl, canvasEl) {
   canvasEl.width = videoEl.videoWidth;
   canvasEl.height = videoEl.videoHeight;
@@ -576,111 +593,117 @@ function captureFrame(videoEl, canvasEl) {
 }
 function base64Of(dataUrl) { return dataUrl.split(',')[1]; }
 
-/* QR scan loop generik */
 function mulaiScanQR(videoEl, key, onFound) {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
   let aktif = true;
   cameraStreams[key + '_scanflag'] = { stop: () => { aktif = false; } };
-
   function tick() {
     if (!aktif) return;
     if (videoEl.readyState === videoEl.HAVE_ENOUGH_DATA) {
-      canvas.width = videoEl.videoWidth;
-      canvas.height = videoEl.videoHeight;
+      canvas.width = videoEl.videoWidth; canvas.height = videoEl.videoHeight;
       ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
       const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const code = window.jsQR ? jsQR(img.data, img.width, img.height) : null;
-      if (code && code.data) {
-        aktif = false;
-        onFound(code.data.trim());
-        return;
-      }
+      if (code && code.data) { aktif = false; onFound(code.data.trim()); return; }
     }
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
 }
 
-/* ====================== LOKASI ====================== */
-function ambilLokasi(dotEl, textEl) {
-  return new Promise((resolve) => {
-    dotEl.className = 'pulse wait';
-    textEl.textContent = 'Mencari sinyal GPS...';
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        const d = { lat: pos.coords.latitude, lng: pos.coords.longitude, akurasi: Math.round(pos.coords.accuracy) };
-        dotEl.className = 'pulse ok';
-        textEl.textContent = d.lat.toFixed(6) + ', ' + d.lng.toFixed(6) + ' (±' + d.akurasi + 'm)';
-        resolve(d);
-      },
-      err => {
-        dotEl.className = 'pulse';
-        textEl.textContent = 'Gagal ambil lokasi: ' + err.message;
-        resolve(null);
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-    );
-  });
-}
+/* ====================== LOKASI (GPS REALTIME) ====================== */
 function jarakMeter(lat1, lon1, lat2, lon2) {
   const R = 6371000, toRad = d => d * Math.PI / 180;
   const dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
   const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
+function cariLokasiTerdekat(lat, lng) {
+  if (!daftarLokasiKerja.length) return null;
+  let terdekat = null, jarakMin = Infinity;
+  daftarLokasiKerja.forEach(l => {
+    const j = jarakMeter(lat, lng, l.lat, l.lng);
+    if (j < jarakMin) { jarakMin = j; terdekat = l; }
+  });
+  return { lokasi: terdekat, jarak: jarakMin };
+}
+function mulaiPantauLokasi() {
+  if (!navigator.geolocation) return;
+  if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+  watchId = navigator.geolocation.watchPosition(
+    pos => { updatePosisi(pos.coords.latitude, pos.coords.longitude, Math.round(pos.coords.accuracy)); },
+    err => { document.getElementById('gps-status').textContent = 'GPS tidak aktif: ' + err.message; },
+    { enableHighAccuracy: true, maximumAge: 3000, timeout: 15000 }
+  );
+}
+function updatePosisi(lat, lng, akurasi) {
+  posisiTerkini = { lat, lng, akurasi };
+  document.getElementById('gps-dot').style.background = 'var(--green)';
+  document.getElementById('gps-akurasi').textContent = '± ' + akurasi + ' m';
+
+  const terdekat = cariLokasiTerdekat(lat, lng);
+  const banner = document.getElementById('gps-banner');
+  if (terdekat) {
+    document.getElementById('gps-jarak').textContent = Math.round(terdekat.jarak) + ' m';
+    document.getElementById('gps-lokasi').textContent = terdekat.lokasi.nama;
+    const dalamRadius = terdekat.jarak <= terdekat.lokasi.radius;
+    banner.classList.toggle('ok', dalamRadius);
+    document.getElementById('gps-status').textContent = dalamRadius ? 'Dalam Radius Absensi' : 'Di luar Radius Absensi';
+  } else {
+    document.getElementById('gps-jarak').textContent = '-';
+    document.getElementById('gps-lokasi').textContent = 'Belum ada data lokasi';
+    document.getElementById('gps-status').textContent = 'Tidak dapat dihitung';
+  }
+
+  if (window.L) {
+    if (!leafletMap) {
+      leafletMap = L.map('gps-map', { zoomControl: true, attributionControl: false }).setView([lat, lng], 16);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(leafletMap);
+      leafletMarker = L.marker([lat, lng]).addTo(leafletMap);
+    } else {
+      leafletMarker.setLatLng([lat, lng]);
+      leafletMap.setView([lat, lng]);
+    }
+  }
+  cekTombolPresensi();
+}
+document.getElementById('link-kalibrasi').addEventListener('click', (e) => {
+  e.preventDefault();
+  document.getElementById('gps-status').textContent = 'Mengkalibrasi ulang...';
+  navigator.geolocation.getCurrentPosition(
+    pos => updatePosisi(pos.coords.latitude, pos.coords.longitude, Math.round(pos.coords.accuracy)),
+    err => showToast('Gagal kalibrasi: ' + err.message, false),
+    { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
+  );
+});
 
 /* ====================== LOGIN ====================== */
 async function muatDaftarNama() {
   const res = await api('daftarKaryawan', {});
   const sel = document.getElementById('login-nama');
-  sel.innerHTML = '<option value="">Pilih nama...</option>';
+  sel.innerHTML = '<option value="">-- Pilih Nama --</option>';
   if (res.sukses !== false && res.daftar) {
-    res.daftar.forEach(n => {
-      const opt = document.createElement('option'); opt.value = n; opt.textContent = n; sel.appendChild(opt);
-    });
+    res.daftar.forEach(n => { const o = document.createElement('option'); o.value = n; o.textContent = n; sel.appendChild(o); });
   }
 }
-function renderPinDots() {
-  document.querySelectorAll('#login-pindots span').forEach((s, i) => {
-    s.classList.toggle('filled', i < pinBuffer.length);
-  });
-}
-function buildKeypad() {
-  const kp = document.getElementById('login-keypad');
-  const keys = ['1','2','3','4','5','6','7','8','9','←','0','⌫'];
-  kp.innerHTML = '';
-  keys.forEach(k => {
-    const b = document.createElement('button');
-    b.textContent = k === '←' ? '' : k;
-    b.addEventListener('click', () => {
-      if (k === '⌫') pinBuffer = pinBuffer.slice(0, -1);
-      else if (k === '←') { /* kosong, placeholder layout */ }
-      else if (pinBuffer.length < 4) pinBuffer += k;
-      renderPinDots();
-    });
-    kp.appendChild(b);
-  });
-}
-buildKeypad();
-
 document.getElementById('btn-login').addEventListener('click', async () => {
   const nama = document.getElementById('login-nama').value;
+  const pin = document.getElementById('login-pin').value.trim();
   if (!nama) return showToast('Pilih nama Anda dulu.', false);
-  if (pinBuffer.length !== 4) return showToast('PIN harus 4 digit.', false);
+  if (!/^[0-9]{4}$/.test(pin)) return showToast('PIN harus 4 digit angka.', false);
   const btn = document.getElementById('btn-login');
   setBusy(btn, true, 'Memproses...', 'Masuk');
-  const res = await api('login', { nama, pin: pinBuffer });
+  const res = await api('login', { nama, pin });
   setBusy(btn, false, '', 'Masuk');
-  if (!res.sukses) { showToast(res.pesan || 'Login gagal.', false); pinBuffer=''; renderPinDots(); return; }
-  sesi = { nama, pin: pinBuffer, bagianKerja: res.bagianKerja, status: res.status };
-  pinBuffer = ''; renderPinDots();
+  if (!res.sukses) { showToast(res.pesan || 'Login gagal.', false); return; }
+  sesi = { nama, pin, bagianKerja: res.bagianKerja, status: res.status };
+  document.getElementById('login-pin').value = '';
   await muatDataMasterUntukSesi();
+  mulaiPantauLokasi();
   showScreen('home');
 });
-
-document.getElementById('btn-goto-daftar').addEventListener('click', () => showScreen('daftar'));
-document.getElementById('back-daftar').addEventListener('click', () => showScreen('login'));
+document.getElementById('login-pin').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('btn-login').click(); });
 
 document.getElementById('btn-submit-daftar').addEventListener('click', async () => {
   const nama = document.getElementById('daftar-nama').value.trim();
@@ -703,53 +726,68 @@ document.getElementById('btn-submit-daftar').addEventListener('click', async () 
   }
 });
 
-document.getElementById('btn-logout').addEventListener('click', () => {
-  sesi = { nama: '', pin: '', bagianKerja: '' };
-  showScreen('login');
-});
-
 /* ====================== DATA MASTER SETELAH LOGIN ====================== */
 async function muatDataMasterUntukSesi() {
   const resLok = await api('daftarLokasi', {});
   daftarLokasiKerja = resLok.daftar || [];
 
-  document.getElementById('home-card-patroli').classList.toggle('hidden', sesi.bagianKerja !== 'Security');
-  document.getElementById('home-card-kegiatan').classList.toggle('hidden', sesi.bagianKerja !== 'Cleaning Service');
+  document.getElementById('btn-goto-patroli').classList.toggle('hidden', sesi.bagianKerja !== 'Security');
+  document.getElementById('btn-goto-kegiatan').classList.toggle('hidden', sesi.bagianKerja !== 'Cleaning Service');
 
-  const navExtra = document.getElementById('nav-extra');
   if (sesi.bagianKerja === 'Security') {
-    navExtra.classList.remove('hidden');
-    navExtra.dataset.goto = 'patroli';
-    navExtra.querySelector('.ic').textContent = '🛡️';
-    navExtra.querySelector('.lb').textContent = 'Patroli';
-    const resP = await api('daftarTitikPatroli', {});
-    daftarTitikPatroli = resP.daftar || [];
+    const resP = await api('daftarTitikPatroli', {}); daftarTitikPatroli = resP.daftar || [];
   } else if (sesi.bagianKerja === 'Cleaning Service') {
-    navExtra.classList.remove('hidden');
-    navExtra.dataset.goto = 'kegiatan';
-    navExtra.querySelector('.ic').textContent = '🧹';
-    navExtra.querySelector('.lb').textContent = 'Kegiatan';
-    const resT = await api('daftarTugasKebersihan', {});
-    daftarTugasKebersihan = resT.daftar || [];
-  } else {
-    navExtra.classList.add('hidden');
+    const resT = await api('daftarTugasKebersihan', {}); daftarTugasKebersihan = resT.daftar || [];
   }
-  navExtra.addEventListener('click', () => { if (navExtra.dataset.goto) showScreen(navExtra.dataset.goto); });
 }
 
-/* ====================== HOME ====================== */
+/* ====================== HOME / DASHBOARD ====================== */
+function updateJam() {
+  const now = new Date();
+  const hariList = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const bulanList = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  document.getElementById('home-tanggal').textContent = hariList[now.getDay()] + ', ' + now.getDate() + ' ' + bulanList[now.getMonth()] + ' ' + now.getFullYear();
+  document.getElementById('home-jam').textContent = now.toLocaleTimeString('id-ID', { hour12: false });
+}
+setInterval(updateJam, 1000);
+
+function inisial(nama) {
+  const parts = String(nama || '-').trim().split(/\s+/);
+  return ((parts[0]||'')[0] || '') + ((parts[1]||'')[0] || '');
+}
+
+function cekTombolPresensi() {
+  const st = sesi.status || {};
+  const btnMasuk = document.getElementById('btn-presensi-masuk');
+  const btnPulang = document.getElementById('btn-presensi-pulang');
+  const adaLokasi = !!posisiTerkini;
+
+  btnMasuk.classList.toggle('btn-navy', !st.sudahClockIn && adaLokasi);
+  btnMasuk.classList.toggle('btn-tan', st.sudahClockIn || !adaLokasi);
+  btnMasuk.disabled = st.sudahClockIn || !adaLokasi;
+
+  btnPulang.classList.toggle('btn-navy', st.sudahClockIn && !st.sudahClockOut && adaLokasi);
+  btnPulang.classList.toggle('btn-tan', !(st.sudahClockIn && !st.sudahClockOut) || !adaLokasi);
+  btnPulang.disabled = !st.sudahClockIn || st.sudahClockOut || !adaLokasi;
+}
+
 function muatHome() {
+  updateJam();
+  document.getElementById('home-avatar').textContent = inisial(sesi.nama).toUpperCase();
   document.getElementById('home-nama').textContent = sesi.nama;
   document.getElementById('home-bagian').textContent = sesi.bagianKerja || '-';
   const st = sesi.status || {};
-  const inEl = document.getElementById('home-status-in');
-  const outEl = document.getElementById('home-status-out');
-  inEl.innerHTML = '<span class="dot ' + (st.sudahClockIn ? 'lime' : 'muted') + '"></span>' +
-    (st.sudahClockIn ? 'Clock In ' + st.jamMasuk : 'Belum Clock In');
-  outEl.innerHTML = '<span class="dot ' + (st.sudahClockOut ? 'lime' : 'muted') + '"></span>' +
-    (st.sudahClockOut ? 'Clock Out ' + st.jamPulang : 'Belum Clock Out');
-  document.getElementById('home-absen-sub').textContent =
-    !st.sudahClockIn ? 'Belum Clock In hari ini' : (!st.sudahClockOut ? 'Sudah Clock In, belum Clock Out' : 'Absensi hari ini selesai');
+  const pIn = document.getElementById('pill-in'), pOut = document.getElementById('pill-out');
+  pIn.textContent = st.sudahClockIn ? 'Clock In ' + st.jamMasuk : 'Belum Clock In';
+  pIn.classList.toggle('done', !!st.sudahClockIn);
+  pOut.textContent = st.sudahClockOut ? 'Clock Out ' + st.jamPulang : 'Belum Clock Out';
+  pOut.classList.toggle('done', !!st.sudahClockOut);
+  document.getElementById('cap-masuk').textContent = st.jamMasuk || '--:--';
+  document.getElementById('cap-pulang').textContent = st.jamPulang || '--:--';
+  cekTombolPresensi();
+  muatRiwayatInline();
+
+  setTimeout(() => { if (leafletMap) leafletMap.invalidateSize(); }, 200);
 }
 
 async function refreshStatus() {
@@ -757,97 +795,76 @@ async function refreshStatus() {
   if (res.sukses) sesi.status = res.status;
 }
 
-/* ====================== ABSEN ====================== */
-let absenState = { jenis: null, fotoB64: null, mime: 'image/jpeg', lokasi: null };
-
-function resetAbsenScreen() {
-  const st = sesi.status || {};
-  document.getElementById('absen-jam-in').textContent = st.jamMasuk || '-';
-  document.getElementById('absen-jam-out').textContent = st.jamPulang || '-';
-  document.getElementById('absen-step-idle').classList.remove('hidden');
-  document.getElementById('absen-step-cam').classList.add('hidden');
-  document.getElementById('absen-shot').classList.add('hidden');
-  document.getElementById('absen-video').classList.remove('hidden');
-  document.getElementById('btn-shoot-absen').parentElement.classList.remove('hidden');
-  document.getElementById('absen-retake-wrap').classList.add('hidden');
-  document.getElementById('btn-kirim-absen').disabled = true;
-  absenState = { jenis: null, fotoB64: null, mime: 'image/jpeg', lokasi: null };
-
-  const btnMulai = document.getElementById('btn-mulai-absen');
-  if (st.sudahClockIn && st.sudahClockOut) {
-    btnMulai.disabled = true; btnMulai.textContent = 'Absensi Hari Ini Selesai';
-  } else {
-    btnMulai.disabled = false;
-    btnMulai.textContent = st.sudahClockIn ? 'Mulai Clock Out' : 'Mulai Clock In';
-  }
-}
-
-document.getElementById('btn-mulai-absen').addEventListener('click', async () => {
-  const st = sesi.status || {};
-  absenState.jenis = st.sudahClockIn ? 'CLOCK OUT' : 'CLOCK IN';
-  document.getElementById('absen-step-idle').classList.add('hidden');
-  document.getElementById('absen-step-cam').classList.remove('hidden');
-  await startCamera(document.getElementById('absen-video'), 'absen');
-});
-
-document.getElementById('btn-shoot-absen').addEventListener('click', () => {
-  const dataUrl = captureFrame(document.getElementById('absen-video'), document.getElementById('absen-canvas'));
-  absenState.fotoB64 = base64Of(dataUrl);
-  document.getElementById('absen-shot').src = dataUrl;
-  document.getElementById('absen-shot').classList.remove('hidden');
-  document.getElementById('absen-video').classList.add('hidden');
-  document.getElementById('btn-shoot-absen').parentElement.classList.add('hidden');
-  document.getElementById('absen-retake-wrap').classList.remove('hidden');
-});
-document.getElementById('btn-retake-absen').addEventListener('click', () => {
-  absenState.fotoB64 = null;
-  document.getElementById('absen-shot').classList.add('hidden');
-  document.getElementById('absen-video').classList.remove('hidden');
-  document.getElementById('btn-shoot-absen').parentElement.classList.remove('hidden');
-  document.getElementById('absen-retake-wrap').classList.add('hidden');
-});
-document.getElementById('btn-lanjut-lokasi-absen').addEventListener('click', async () => {
-  document.getElementById('absen-retake-wrap').classList.add('hidden');
-  const loc = await ambilLokasi(document.getElementById('absen-loc-dot'), document.getElementById('absen-loc-text'));
-  absenState.lokasi = loc;
-  document.getElementById('btn-kirim-absen').disabled = !loc;
-});
-document.getElementById('btn-batal-absen').addEventListener('click', () => showScreen('home'));
-
-document.getElementById('btn-kirim-absen').addEventListener('click', async () => {
-  if (!absenState.fotoB64 || !absenState.lokasi) return showToast('Foto dan lokasi wajib diambil.', false);
-  const btn = document.getElementById('btn-kirim-absen');
-  setBusy(btn, true, 'Mengirim...', 'Kirim Absen');
-  const res = await api('simpanAbsen', {
-    nama: sesi.nama, pin: sesi.pin, jenisAbsen: absenState.jenis,
-    fotoBase64: absenState.fotoB64, mimeType: absenState.mime,
-    lat: absenState.lokasi.lat, lng: absenState.lokasi.lng, akurasi: absenState.lokasi.akurasi
-  });
-  setBusy(btn, false, '', 'Kirim Absen');
-  showToast(res.pesan, res.sukses);
-  if (res.sukses) { await refreshStatus(); showScreen('home'); }
-});
-
-/* ====================== RIWAYAT ====================== */
-async function muatRiwayat() {
-  const box = document.getElementById('riwayat-list');
-  box.innerHTML = '<p class="muted">Memuat...</p>';
+async function muatRiwayatInline() {
+  const box = document.getElementById('home-riwayat');
+  box.innerHTML = '<div class="empty-state">Memuat...</div>';
   const res = await api('riwayatAbsensi', { nama: sesi.nama, pin: sesi.pin });
-  if (!res.sukses) { box.innerHTML = '<p class="muted">' + res.pesan + '</p>'; return; }
+  if (!res.sukses) { box.innerHTML = '<div class="empty-state">' + res.pesan + '</div>'; return; }
   if (!res.riwayat || !res.riwayat.length) {
-    box.innerHTML = '<div class="empty-state"><div class="big">📭</div>Belum ada riwayat 7 hari terakhir.</div>';
+    box.innerHTML = '<div class="empty-state"><div class="big">📭</div>Belum ada riwayat absensi.</div>';
     return;
   }
-  box.innerHTML = '';
-  res.riwayat.forEach(r => {
-    const p = document.createElement('div');
-    p.className = 'panel accent-muted';
-    p.innerHTML = '<div class="row"><span class="k">' + r.tanggal + '</span></div>' +
-      '<div class="row"><span class="k">Masuk</span><span class="v">' + (r.jamMasuk || '-') + '</span></div>' +
-      '<div class="row"><span class="k">Pulang</span><span class="v">' + (r.jamPulang || '-') + '</span></div>';
-    box.appendChild(p);
-  });
+  box.innerHTML = res.riwayat.map(r =>
+    '<div class="riwayat-row"><span class="tgl">' + r.tanggal + '</span>' +
+    '<span class="jam">Masuk ' + (r.jamMasuk || '-') + ' &nbsp;·&nbsp; Pulang ' + (r.jamPulang || '-') + '</span></div>'
+  ).join('');
 }
+
+/* ====================== PRESENSI (MODAL) ====================== */
+let presensiJenis = null, presensiFotoB64 = null;
+function bukaModalPresensi(jenis) {
+  presensiJenis = jenis;
+  presensiFotoB64 = null;
+  document.getElementById('presensi-modal-title').textContent = jenis === 'CLOCK IN' ? 'Presensi Masuk' : 'Presensi Pulang';
+  document.getElementById('presensi-shot').classList.add('hidden');
+  document.getElementById('presensi-video').classList.remove('hidden');
+  document.getElementById('presensi-shoot-wrap').classList.remove('hidden');
+  document.getElementById('presensi-retake-wrap').classList.add('hidden');
+  document.getElementById('modal-presensi').classList.remove('hidden');
+  startCamera(document.getElementById('presensi-video'), 'presensi');
+}
+function tutupModalPresensi() {
+  stopCameraByKey('presensi');
+  document.getElementById('modal-presensi').classList.add('hidden');
+}
+document.getElementById('btn-presensi-masuk').addEventListener('click', () => bukaModalPresensi('CLOCK IN'));
+document.getElementById('btn-presensi-pulang').addEventListener('click', () => bukaModalPresensi('CLOCK OUT'));
+document.getElementById('btn-batal-presensi').addEventListener('click', tutupModalPresensi);
+document.getElementById('btn-shoot-presensi').addEventListener('click', () => {
+  const dataUrl = captureFrame(document.getElementById('presensi-video'), document.getElementById('presensi-canvas'));
+  presensiFotoB64 = base64Of(dataUrl);
+  document.getElementById('presensi-shot').src = dataUrl;
+  document.getElementById('presensi-shot').classList.remove('hidden');
+  document.getElementById('presensi-video').classList.add('hidden');
+  document.getElementById('presensi-shoot-wrap').classList.add('hidden');
+  document.getElementById('presensi-retake-wrap').classList.remove('hidden');
+  stopCameraByKey('presensi');
+});
+document.getElementById('btn-retake-presensi').addEventListener('click', async () => {
+  presensiFotoB64 = null;
+  document.getElementById('presensi-shot').classList.add('hidden');
+  document.getElementById('presensi-video').classList.remove('hidden');
+  document.getElementById('presensi-shoot-wrap').classList.remove('hidden');
+  document.getElementById('presensi-retake-wrap').classList.add('hidden');
+  await startCamera(document.getElementById('presensi-video'), 'presensi');
+});
+document.getElementById('btn-kirim-presensi').addEventListener('click', async () => {
+  if (!presensiFotoB64 || !posisiTerkini) return showToast('Foto dan lokasi wajib tersedia.', false);
+  const btn = document.getElementById('btn-kirim-presensi');
+  setBusy(btn, true, 'Mengirim...', 'Kirim');
+  const res = await api('simpanAbsen', {
+    nama: sesi.nama, pin: sesi.pin, jenisAbsen: presensiJenis,
+    fotoBase64: presensiFotoB64, mimeType: 'image/jpeg',
+    lat: posisiTerkini.lat, lng: posisiTerkini.lng, akurasi: posisiTerkini.akurasi
+  });
+  setBusy(btn, false, '', 'Kirim');
+  showToast(res.pesan, res.sukses);
+  if (res.sukses) {
+    tutupModalPresensi();
+    await refreshStatus();
+    muatHome();
+  }
+});
 
 /* ====================== IJIN ====================== */
 let ijinFotoB64 = null;
@@ -900,18 +917,15 @@ document.getElementById('btn-kirim-ijin').addEventListener('click', async () => 
 });
 
 /* ====================== PATROLI ====================== */
-let patroliState = { namaPos: null, fotoB64: null, lokasi: null };
-
+let patroliState = { namaPos: null, fotoB64: null };
 function resetPatroliScreen() {
-  patroliState = { namaPos: null, fotoB64: null, lokasi: null };
+  patroliState = { namaPos: null, fotoB64: null };
   document.getElementById('patroli-step-pilih').classList.remove('hidden');
   document.getElementById('patroli-step-scan').classList.add('hidden');
   document.getElementById('patroli-step-lapor').classList.add('hidden');
   const sel = document.getElementById('patroli-pilih-manual');
   sel.innerHTML = '<option value="">Pilih pos...</option>';
-  daftarTitikPatroli.forEach(t => {
-    const o = document.createElement('option'); o.value = t.nama; o.textContent = t.nama; sel.appendChild(o);
-  });
+  daftarTitikPatroli.forEach(t => { const o = document.createElement('option'); o.value = t.nama; o.textContent = t.nama; sel.appendChild(o); });
 }
 function mulaiLaporPatroli(namaPos) {
   const ada = daftarTitikPatroli.find(t => t.nama === namaPos);
@@ -927,9 +941,9 @@ function mulaiLaporPatroli(namaPos) {
   document.getElementById('btn-retake-patroli').classList.add('hidden');
   document.getElementById('btn-kirim-patroli').disabled = true;
   startCamera(document.getElementById('patroli-video2'), 'patroli2');
-  ambilLokasi(document.getElementById('patroli-loc-dot'), document.getElementById('patroli-loc-text')).then(l => {
-    patroliState.lokasi = l;
-  });
+  const dot = document.getElementById('patroli-loc-dot'), txt = document.getElementById('patroli-loc-text');
+  if (posisiTerkini) { dot.className = 'pulse ok'; txt.textContent = posisiTerkini.lat.toFixed(6) + ', ' + posisiTerkini.lng.toFixed(6) + ' (±' + posisiTerkini.akurasi + 'm)'; }
+  else { dot.className = 'pulse wait'; txt.textContent = 'Menunggu sinyal GPS...'; }
 }
 document.getElementById('btn-scan-patroli').addEventListener('click', async () => {
   document.getElementById('patroli-step-pilih').classList.add('hidden');
@@ -957,7 +971,7 @@ document.getElementById('btn-shoot-patroli').addEventListener('click', () => {
   document.getElementById('patroli-video2').classList.add('hidden');
   document.getElementById('btn-shoot-patroli').classList.add('hidden');
   document.getElementById('btn-retake-patroli').classList.remove('hidden');
-  document.getElementById('btn-kirim-patroli').disabled = !patroliState.lokasi;
+  document.getElementById('btn-kirim-patroli').disabled = !posisiTerkini;
   stopCameraByKey('patroli2');
 });
 document.getElementById('btn-retake-patroli').addEventListener('click', async () => {
@@ -971,13 +985,13 @@ document.getElementById('btn-retake-patroli').addEventListener('click', async ()
 });
 document.getElementById('btn-batal-patroli').addEventListener('click', () => showScreen('home'));
 document.getElementById('btn-kirim-patroli').addEventListener('click', async () => {
-  if (!patroliState.fotoB64 || !patroliState.lokasi) return showToast('Foto dan lokasi wajib.', false);
+  if (!patroliState.fotoB64 || !posisiTerkini) return showToast('Foto dan lokasi wajib.', false);
   const btn = document.getElementById('btn-kirim-patroli');
   setBusy(btn, true, 'Mengirim...', 'Kirim Laporan Patroli');
   const res = await api('simpanPatroli', {
     nama: sesi.nama, pin: sesi.pin, namaPos: patroliState.namaPos,
     fotoBase64: patroliState.fotoB64, mimeType: 'image/jpeg',
-    lat: patroliState.lokasi.lat, lng: patroliState.lokasi.lng, akurasi: patroliState.lokasi.akurasi,
+    lat: posisiTerkini.lat, lng: posisiTerkini.lng, akurasi: posisiTerkini.akurasi,
     catatan: document.getElementById('patroli-catatan').value.trim()
   });
   setBusy(btn, false, '', 'Kirim Laporan Patroli');
@@ -986,18 +1000,15 @@ document.getElementById('btn-kirim-patroli').addEventListener('click', async () 
 });
 
 /* ====================== LAPORAN KEGIATAN (CLEANING) ====================== */
-let kegiatanState = { tugas: null, area: null, fotoSebelum: null, fotoSesudah: null, lokasi: null };
-
+let kegiatanState = { tugas: null, area: null, fotoSebelum: null, fotoSesudah: null };
 function resetKegiatanScreen() {
-  kegiatanState = { tugas: null, area: null, fotoSebelum: null, fotoSesudah: null, lokasi: null };
+  kegiatanState = { tugas: null, area: null, fotoSebelum: null, fotoSesudah: null };
   document.getElementById('kegiatan-step-pilih').classList.remove('hidden');
   document.getElementById('kegiatan-step-scan').classList.add('hidden');
   document.getElementById('kegiatan-step-lapor').classList.add('hidden');
   const sel = document.getElementById('kegiatan-pilih-manual');
   sel.innerHTML = '<option value="">Pilih tugas...</option>';
-  daftarTugasKebersihan.forEach(t => {
-    const o = document.createElement('option'); o.value = t.namaTugas; o.textContent = t.namaTugas + (t.area ? ' — ' + t.area : ''); sel.appendChild(o);
-  });
+  daftarTugasKebersihan.forEach(t => { const o = document.createElement('option'); o.value = t.namaTugas; o.textContent = t.namaTugas + (t.area ? ' — ' + t.area : ''); sel.appendChild(o); });
 }
 function mulaiLaporKegiatan(namaTugas) {
   const ada = daftarTugasKebersihan.find(t => t.namaTugas === namaTugas);
@@ -1008,16 +1019,16 @@ function mulaiLaporKegiatan(namaTugas) {
   document.getElementById('kegiatan-step-pilih').classList.add('hidden');
   document.getElementById('kegiatan-step-scan').classList.add('hidden');
   document.getElementById('kegiatan-step-lapor').classList.remove('hidden');
-
   document.getElementById('keg-sebelum-cam').classList.remove('hidden');
   document.getElementById('keg-shot-sebelum').classList.add('hidden');
   document.getElementById('btn-retake-sebelum').classList.add('hidden');
   document.getElementById('keg-sesudah-wrap').classList.add('hidden');
   document.getElementById('keg-sesudah-hint').classList.remove('hidden');
   document.getElementById('btn-kirim-kegiatan').disabled = true;
-
   startCamera(document.getElementById('keg-video-sebelum'), 'kegSebelum');
-  ambilLokasi(document.getElementById('keg-loc-dot'), document.getElementById('keg-loc-text')).then(l => { kegiatanState.lokasi = l; });
+  const dot = document.getElementById('keg-loc-dot'), txt = document.getElementById('keg-loc-text');
+  if (posisiTerkini) { dot.className = 'pulse ok'; txt.textContent = posisiTerkini.lat.toFixed(6) + ', ' + posisiTerkini.lng.toFixed(6) + ' (±' + posisiTerkini.akurasi + 'm)'; }
+  else { dot.className = 'pulse wait'; txt.textContent = 'Menunggu sinyal GPS...'; }
 }
 document.getElementById('btn-scan-kegiatan').addEventListener('click', async () => {
   document.getElementById('kegiatan-step-pilih').classList.add('hidden');
@@ -1038,8 +1049,7 @@ document.getElementById('btn-pilih-manual-kegiatan').addEventListener('click', (
   mulaiLaporKegiatan(v);
 });
 function cekTombolKirimKegiatan() {
-  document.getElementById('btn-kirim-kegiatan').disabled =
-    !(kegiatanState.fotoSebelum && kegiatanState.fotoSesudah && kegiatanState.lokasi);
+  document.getElementById('btn-kirim-kegiatan').disabled = !(kegiatanState.fotoSebelum && kegiatanState.fotoSesudah && posisiTerkini);
 }
 document.getElementById('btn-shoot-sebelum').addEventListener('click', () => {
   const dataUrl = captureFrame(document.getElementById('keg-video-sebelum'), document.getElementById('keg-canvas-sebelum'));
@@ -1049,7 +1059,6 @@ document.getElementById('btn-shoot-sebelum').addEventListener('click', () => {
   document.getElementById('keg-sebelum-cam').classList.add('hidden');
   document.getElementById('btn-retake-sebelum').classList.remove('hidden');
   stopCameraByKey('kegSebelum');
-
   document.getElementById('keg-sesudah-hint').classList.add('hidden');
   document.getElementById('keg-sesudah-wrap').classList.remove('hidden');
   startCamera(document.getElementById('keg-video-sesudah'), 'kegSesudah');
@@ -1084,12 +1093,12 @@ document.getElementById('btn-retake-sesudah').addEventListener('click', async ()
 document.getElementById('btn-batal-kegiatan').addEventListener('click', () => showScreen('home'));
 document.getElementById('btn-kirim-kegiatan').addEventListener('click', async () => {
   if (!kegiatanState.fotoSebelum || !kegiatanState.fotoSesudah) return showToast('Foto sebelum & sesudah wajib.', false);
-  if (!kegiatanState.lokasi) return showToast('Lokasi GPS belum didapat.', false);
+  if (!posisiTerkini) return showToast('Lokasi GPS belum didapat.', false);
   const btn = document.getElementById('btn-kirim-kegiatan');
   setBusy(btn, true, 'Mengirim...', 'Kirim Laporan');
   const res = await api('simpanLaporanKegiatan', {
     nama: sesi.nama, pin: sesi.pin, tugas: kegiatanState.tugas, area: kegiatanState.area,
-    lat: kegiatanState.lokasi.lat, lng: kegiatanState.lokasi.lng, akurasi: kegiatanState.lokasi.akurasi,
+    lat: posisiTerkini.lat, lng: posisiTerkini.lng, akurasi: posisiTerkini.akurasi,
     fotoSebelumBase64: kegiatanState.fotoSebelum, fotoSesudahBase64: kegiatanState.fotoSesudah,
     mimeType: 'image/jpeg', catatan: document.getElementById('keg-catatan').value.trim()
   });
